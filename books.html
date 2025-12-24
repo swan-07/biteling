@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiteLing - Books</title>
+    <link rel="stylesheet" href="books.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <button class="back-button" onclick="window.location.href='index.html'">← Back</button>
+            <h1 class="page-title">Books</h1>
+            <div class="user-cookies">
+                <span class="cookie-icon">🍪</span>
+                <span id="cookieCount">0</span>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+            <button class="tab-btn active" data-tab="store">
+                <span class="tab-icon">🏪</span>
+                <span>Store</span>
+            </button>
+            <button class="tab-btn" data-tab="library">
+                <span class="tab-icon">📚</span>
+                <span>My Library</span>
+            </button>
+        </div>
+
+        <!-- Store Tab -->
+        <div class="tab-content active" id="store">
+            <div class="section-header">
+                <h2>Book Store</h2>
+                <p class="section-subtitle">Purchase books with your cookies</p>
+            </div>
+
+            <div class="books-grid" id="storeGrid">
+                <!-- Books will be dynamically loaded here -->
+            </div>
+        </div>
+
+        <!-- Library Tab -->
+        <div class="tab-content" id="library">
+            <div class="section-header">
+                <h2>My Library</h2>
+                <p class="section-subtitle">Your purchased books</p>
+            </div>
+
+            <div class="empty-library" id="emptyLibrary">
+                <div class="empty-icon">📖</div>
+                <p>Your library is empty</p>
+                <p class="empty-subtext">Purchase books from the store to start reading!</p>
+            </div>
+
+            <div class="books-grid" id="libraryGrid">
+                <!-- Purchased books will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase Modal -->
+    <div class="modal-overlay" id="purchaseModal">
+        <div class="modal-content">
+            <div class="modal-icon" id="modalIcon">📚</div>
+            <h2 class="modal-title" id="modalTitle">Purchase Successful!</h2>
+            <p class="modal-message" id="modalMessage"></p>
+            <button class="modal-button" id="modalButton">Go to Library</button>
+        </div>
+    </div>
+
+    <script src="books.js"></script>
+</body>
+</html>

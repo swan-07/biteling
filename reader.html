@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiteLing - Reader</title>
+    <link rel="stylesheet" href="reader.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <button class="back-button" onclick="window.location.href='books.html'">← Back</button>
+            <h1 class="book-title" id="bookTitle">Loading...</h1>
+            <div class="chapter-nav">
+                <button class="nav-btn" id="prevChapter" disabled>←</button>
+                <span class="chapter-indicator" id="chapterIndicator">Chapter 1</span>
+                <button class="nav-btn" id="nextChapter">→</button>
+            </div>
+        </div>
+
+        <!-- Reading Area -->
+        <div class="reading-container">
+            <div class="reading-card">
+                <div class="chapter-header">
+                    <h2 class="chapter-title" id="chapterTitle">Chapter 1</h2>
+                    <button class="listen-btn" id="listenBtn" onclick="toggleAudio()">
+                        <span class="listen-icon" id="listenIcon">🔊</span>
+                        <span id="listenText">Listen</span>
+                    </button>
+                </div>
+                <div class="story-text" id="storyText">
+                    <!-- Story content will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Azure TTS Config Notice -->
+        <div class="tts-notice" id="ttsNotice">
+            <div class="notice-content">
+                <span class="notice-icon">🎤</span>
+                <p>To enable Text-to-Speech, add your Azure Speech API key in the code.</p>
+                <button onclick="document.getElementById('ttsNotice').style.display='none'">Got it</button>
+            </div>
+        </div>
+
+        <!-- Dictionary Popup -->
+        <div class="dictionary-popup" id="dictionaryPopup">
+            <div class="dict-header">
+                <div class="dict-chinese" id="dictChinese">你好</div>
+                <button class="dict-close" onclick="closeDictionary()">×</button>
+            </div>
+            <div class="dict-pinyin" id="dictPinyin">nǐ hǎo</div>
+            <div class="dict-definition" id="dictDefinition">hello</div>
+            <div class="dict-example" id="dictExample">你好！很高兴见到你。</div>
+            <button class="add-to-deck-btn" id="addToDeckBtn" onclick="addWordToDeck()">
+                <span>+</span>
+                Add to Review Deck
+            </button>
+        </div>
+
+        <!-- Overlay for dictionary -->
+        <div class="dict-overlay" id="dictOverlay" onclick="closeDictionary()"></div>
+    </div>
+
+    <script src="reader.js"></script>
+</body>
+</html>

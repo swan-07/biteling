@@ -1,0 +1,429 @@
+// HSK 1 Vocabulary Deck (150 words)
+const hsk1Deck = [
+    { chinese: "你好", pinyin: "nǐ hǎo", definition: "hello", example: "你好！很高兴见到你。" },
+    { chinese: "谢谢", pinyin: "xiè xie", definition: "thank you", example: "谢谢你的帮助。" },
+    { chinese: "再见", pinyin: "zài jiàn", definition: "goodbye", example: "再见！明天见。" },
+    { chinese: "我", pinyin: "wǒ", definition: "I, me", example: "我是学生。" },
+    { chinese: "你", pinyin: "nǐ", definition: "you", example: "你叫什么名字？" },
+    { chinese: "他", pinyin: "tā", definition: "he, him", example: "他是我朋友。" },
+    { chinese: "她", pinyin: "tā", definition: "she, her", example: "她很漂亮。" },
+    { chinese: "是", pinyin: "shì", definition: "to be", example: "这是我的书。" },
+    { chinese: "的", pinyin: "de", definition: "possessive particle", example: "我的妈妈很好。" },
+    { chinese: "不", pinyin: "bù", definition: "not, no", example: "我不是老师。" },
+    { chinese: "吗", pinyin: "ma", definition: "question particle", example: "你好吗？" },
+    { chinese: "呢", pinyin: "ne", definition: "question particle", example: "你呢？" },
+    { chinese: "什么", pinyin: "shén me", definition: "what", example: "这是什么？" },
+    { chinese: "谁", pinyin: "shéi", definition: "who", example: "他是谁？" },
+    { chinese: "哪", pinyin: "nǎ", definition: "which", example: "你是哪国人？" },
+    { chinese: "这", pinyin: "zhè", definition: "this", example: "这是我的。" },
+    { chinese: "那", pinyin: "nà", definition: "that", example: "那是什么？" },
+    { chinese: "一", pinyin: "yī", definition: "one", example: "我有一个朋友。" },
+    { chinese: "二", pinyin: "èr", definition: "two", example: "我有二个苹果。" },
+    { chinese: "三", pinyin: "sān", definition: "three", example: "三个人。" }
+];
+
+// ========================================
+// SPACED REPETITION SYSTEM (SRS)
+// ========================================
+
+// SRS Intervals (in minutes for testing, will convert to days for production)
+const SRS_INTERVALS = {
+    again: 1,      // 1 minute (for testing) - in production: same day
+    hard: 10,      // 10 minutes (for testing) - in production: 1 day
+    good: 1440,    // 1 day (in minutes)
+    easy: 4320     // 3 days (in minutes)
+};
+
+// Mastery thresholds
+const MASTERY_THRESHOLD = 4; // Number of "good" or "easy" ratings needed for mastery
+
+// Card state structure
+class CardState {
+    constructor(word) {
+        this.word = word;
+        this.interval = 0;           // Minutes until next review
+        this.dueDate = Date.now();   // When card is due for review
+        this.ease = 2.5;             // Ease factor (like Anki)
+        this.reviews = 0;            // Total reviews
+        this.lapses = 0;             // Times clicked "Again"
+        this.successfulReviews = 0;  // Times clicked "Good" or "Easy"
+        this.masteryLevel = 0;       // 0-4, 4 = mastered
+        this.lastReview = null;
+    }
+}
+
+// Load or initialize card states
+function loadCardStates() {
+    const saved = localStorage.getItem('cardStates');
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        // Convert plain objects back to CardState instances
+        const states = {};
+        for (const word in parsed) {
+            states[word] = Object.assign(new CardState(word), parsed[word]);
+        }
+        return states;
+    }
+    return {};
+}
+
+// Save card states
+function saveCardStates(states) {
+    localStorage.setItem('cardStates', JSON.stringify(states));
+}
+
+// Get or create card state
+function getCardState(word, cardStates) {
+    if (!cardStates[word]) {
+        cardStates[word] = new CardState(word);
+    }
+    return cardStates[word];
+}
+
+// Calculate next interval based on rating (SM-2 algorithm, simplified)
+function calculateNextInterval(state, rating) {
+    let newInterval;
+    let newEase = state.ease;
+
+    switch(rating) {
+        case 'again':
+            newInterval = SRS_INTERVALS.again;
+            newEase = Math.max(1.3, state.ease - 0.2);
+            state.lapses++;
+            state.masteryLevel = Math.max(0, state.masteryLevel - 1);
+            break;
+
+        case 'hard':
+            newInterval = Math.max(SRS_INTERVALS.hard, state.interval * 1.2);
+            newEase = Math.max(1.3, state.ease - 0.15);
+            break;
+
+        case 'good':
+            if (state.interval === 0) {
+                newInterval = SRS_INTERVALS.good;
+            } else {
+                newInterval = state.interval * state.ease;
+            }
+            state.successfulReviews++;
+            state.masteryLevel = Math.min(MASTERY_THRESHOLD, state.masteryLevel + 1);
+            break;
+
+        case 'easy':
+            if (state.interval === 0) {
+                newInterval = SRS_INTERVALS.easy;
+            } else {
+                newInterval = state.interval * state.ease * 1.3;
+            }
+            newEase = state.ease + 0.15;
+            state.successfulReviews++;
+            state.masteryLevel = Math.min(MASTERY_THRESHOLD, state.masteryLevel + 1);
+            break;
+    }
+
+    state.interval = newInterval;
+    state.ease = newEase;
+    state.dueDate = Date.now() + (newInterval * 60 * 1000); // Convert minutes to milliseconds
+    state.reviews++;
+    state.lastReview = Date.now();
+
+    return state;
+}
+
+// Build review deck based on due cards
+function buildReviewDeck() {
+    const customWords = JSON.parse(localStorage.getItem('customDeck') || '[]');
+    const combinedDeck = [...hsk1Deck, ...customWords];
+
+    // Remove duplicates
+    const uniqueDeck = [];
+    const seenWords = new Set();
+    for (const card of combinedDeck) {
+        if (!seenWords.has(card.chinese)) {
+            uniqueDeck.push(card);
+            seenWords.add(card.chinese);
+        }
+    }
+
+    const cardStates = loadCardStates();
+    const now = Date.now();
+
+    // Get cards that are due for review
+    const dueCards = uniqueDeck.filter(card => {
+        const state = getCardState(card.chinese, cardStates);
+        return state.dueDate <= now;
+    });
+
+    // If no due cards, add some new cards
+    if (dueCards.length === 0) {
+        const newCards = uniqueDeck.filter(card => {
+            const state = getCardState(card.chinese, cardStates);
+            return state.reviews === 0;
+        }).slice(0, 20);
+        return newCards;
+    }
+
+    // Sort by due date (oldest first) and limit to daily goal
+    dueCards.sort((a, b) => {
+        const stateA = getCardState(a.chinese, cardStates);
+        const stateB = getCardState(b.chinese, cardStates);
+        return stateA.dueDate - stateB.dueDate;
+    });
+
+    return dueCards.slice(0, 20);
+}
+
+// State
+let currentCardIndex = 0;
+let cardsReviewed = 0;
+let cookiesEarned = 0;
+let showingAnswer = false;
+let masteredInSession = 0;
+const dailyGoal = 20;
+
+let reviewDeck = buildReviewDeck();
+let cardStates = loadCardStates();
+
+// Azure TTS Configuration
+const AZURE_CONFIG = {
+    subscriptionKey: '',
+    region: '',
+};
+
+// Initialize
+function init() {
+    if (reviewDeck.length === 0) {
+        alert('No cards due for review! Come back later or add more words from books.');
+        window.location.href = 'index.html';
+        return;
+    }
+
+    loadCard(currentCardIndex);
+    updateProgress();
+
+    // Show answer button click
+    document.getElementById('showAnswerBtn').addEventListener('click', showAnswer);
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', handleKeyPress);
+}
+
+// Load card
+function loadCard(index) {
+    if (index >= reviewDeck.length) {
+        finishReview();
+        return;
+    }
+
+    const card = reviewDeck[index];
+    const state = getCardState(card.chinese, cardStates);
+
+    document.getElementById('chinese').textContent = card.chinese;
+    document.getElementById('pinyin').textContent = card.pinyin;
+    document.getElementById('definition').textContent = card.definition;
+    document.getElementById('example').textContent = card.example;
+
+    // Update mastery indicator
+    updateMasteryIndicator(state.masteryLevel);
+
+    // Reset card state
+    showingAnswer = false;
+    document.querySelector('.card-back').classList.add('hidden');
+    document.getElementById('showAnswerBtn').classList.remove('hidden');
+    document.getElementById('ratingButtons').classList.add('hidden');
+}
+
+// Update mastery indicator
+function updateMasteryIndicator(level) {
+    const indicators = document.querySelectorAll('.mastery-dot');
+    indicators.forEach((dot, index) => {
+        if (index < level) {
+            dot.classList.add('filled');
+        } else {
+            dot.classList.remove('filled');
+        }
+    });
+}
+
+// Show answer
+function showAnswer() {
+    showingAnswer = true;
+    document.querySelector('.card-back').classList.remove('hidden');
+    document.getElementById('showAnswerBtn').classList.add('hidden');
+    document.getElementById('ratingButtons').classList.remove('hidden');
+}
+
+// Rate card with SRS
+function rateCard(rating) {
+    if (!showingAnswer) return;
+
+    const card = reviewDeck[currentCardIndex];
+    let state = getCardState(card.chinese, cardStates);
+
+    // Calculate next interval
+    state = calculateNextInterval(state, rating);
+
+    // Track mastery
+    if (state.masteryLevel === MASTERY_THRESHOLD && rating !== 'again') {
+        masteredInSession++;
+    }
+
+    // Save state
+    cardStates[card.chinese] = state;
+    saveCardStates(cardStates);
+
+    // Award cookie
+    cookiesEarned++;
+    cardsReviewed++;
+
+    updateProgress();
+
+    // Move to next card
+    currentCardIndex++;
+
+    if (currentCardIndex < reviewDeck.length) {
+        setTimeout(() => {
+            loadCard(currentCardIndex);
+        }, 200);
+    } else {
+        finishReview();
+    }
+}
+
+// Update progress
+function updateProgress() {
+    const progress = (cardsReviewed / reviewDeck.length) * 100;
+    document.getElementById('progressBar').style.width = `${progress}%`;
+    document.getElementById('progressText').textContent = `${cardsReviewed}/${reviewDeck.length}`;
+    document.getElementById('cookiesEarned').textContent = cookiesEarned;
+}
+
+// Finish review
+function finishReview() {
+    // Update user data
+    const userData = JSON.parse(localStorage.getItem('bitelingData') || '{\"streak\":0,\"cookies\":0,\"cardsReviewed\":0,\"dailyGoal\":20,\"level\":1,\"wordsLearned\":0}');
+    userData.cookies += cookiesEarned;
+    userData.cardsReviewed = cardsReviewed;
+
+    // Calculate total mastered words
+    const allStates = loadCardStates();
+    const masteredWords = Object.values(allStates).filter(state =>
+        state.masteryLevel === MASTERY_THRESHOLD
+    ).length;
+
+    userData.wordsLearned = masteredWords;
+
+    // Update level based on mastered words (HSK levels)
+    if (masteredWords >= 5000) userData.level = 6;
+    else if (masteredWords >= 2500) userData.level = 5;
+    else if (masteredWords >= 1200) userData.level = 4;
+    else if (masteredWords >= 600) userData.level = 3;
+    else if (masteredWords >= 300) userData.level = 2;
+    else if (masteredWords >= 150) userData.level = 2;
+
+    // Mark daily review complete
+    if (cardsReviewed >= dailyGoal) {
+        userData.streak += 1;
+        userData.dailyReviewComplete = true;
+    }
+
+    localStorage.setItem('bitelingData', JSON.stringify(userData));
+
+    // Save session data
+    sessionStorage.setItem('reviewSession', JSON.stringify({
+        cardsReviewed: cardsReviewed,
+        cookiesEarned: cookiesEarned,
+        masteredInSession: masteredInSession
+    }));
+
+    // Go to completion screen
+    window.location.href = 'complete.html';
+}
+
+// Play audio pronunciation
+function playAudio() {
+    const card = reviewDeck[currentCardIndex];
+    const text = card.chinese;
+
+    // Try Azure TTS first
+    if (AZURE_CONFIG.subscriptionKey && AZURE_CONFIG.region) {
+        synthesizeSpeech(text);
+    } else {
+        // Fallback to Web Speech API
+        playAudioFallback(text);
+    }
+}
+
+// Azure TTS
+async function synthesizeSpeech(text) {
+    try {
+        const tokenResponse = await fetch(`https://${AZURE_CONFIG.region}.api.cognitive.microsoft.com/sts/v1.0/issueToken`, {
+            method: 'POST',
+            headers: { 'Ocp-Apim-Subscription-Key': AZURE_CONFIG.subscriptionKey }
+        });
+
+        const token = await tokenResponse.text();
+        const url = `https://${AZURE_CONFIG.region}.tts.speech.microsoft.com/cognitiveservices/v1`;
+
+        const ssml = `
+            <speak version='1.0' xml:lang='zh-CN'>
+                <voice xml:lang='zh-CN' name='zh-CN-XiaoxiaoNeural'>
+                    <prosody rate='0.8'>${text}</prosody>
+                </voice>
+            </speak>
+        `;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/ssml+xml',
+                'X-Microsoft-OutputFormat': 'audio-16khz-128kbitrate-mono-mp3'
+            },
+            body: ssml
+        });
+
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        audio.play();
+    } catch (error) {
+        console.error('Azure TTS error:', error);
+        playAudioFallback(text);
+    }
+}
+
+// Fallback Web Speech API
+function playAudioFallback(text) {
+    if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'zh-CN';
+        utterance.rate = 0.8;
+        speechSynthesis.speak(utterance);
+    }
+}
+
+// Keyboard shortcuts
+function handleKeyPress(e) {
+    if (!showingAnswer && e.code === 'Space') {
+        e.preventDefault();
+        showAnswer();
+    } else if (showingAnswer) {
+        switch(e.code) {
+            case 'Digit1':
+                rateCard('again');
+                break;
+            case 'Digit2':
+                rateCard('hard');
+                break;
+            case 'Digit3':
+                rateCard('good');
+                break;
+            case 'Digit4':
+                rateCard('easy');
+                break;
+        }
+    }
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', init);

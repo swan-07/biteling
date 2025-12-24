@@ -1,0 +1,485 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Quicksand', -apple-system, sans-serif;
+    background: #FFF9F0;
+    min-height: 100vh;
+    padding: 24px;
+    color: #6B5D4F;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Top Bar */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 8px 32px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.back-button {
+    background: #FFFFFF;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #6B5D4F;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Quicksand', sans-serif;
+    transition: all 0.2s ease;
+    box-shadow:
+        0 1px 2px rgba(139, 115, 85, 0.04),
+        0 2px 4px rgba(139, 115, 85, 0.06);
+}
+
+.back-button:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 2px 4px rgba(139, 115, 85, 0.06),
+        0 4px 8px rgba(139, 115, 85, 0.1);
+}
+
+.book-title {
+    font-size: 1.5rem;
+    color: #8B7355;
+    font-weight: 600;
+    flex: 1;
+    text-align: center;
+    font-family: 'Noto Sans SC', sans-serif;
+}
+
+.chapter-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 8px 16px;
+    box-shadow:
+        0 1px 2px rgba(139, 115, 85, 0.04),
+        0 2px 4px rgba(139, 115, 85, 0.06);
+}
+
+.nav-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #8B7355;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: all 0.2s ease;
+    font-weight: 600;
+}
+
+.nav-btn:hover:not(:disabled) {
+    color: #6B5D4F;
+    transform: scale(1.1);
+}
+
+.nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.chapter-indicator {
+    font-size: 0.95rem;
+    color: #8B7355;
+    font-weight: 600;
+    min-width: 80px;
+    text-align: center;
+}
+
+/* Reading Area */
+.reading-container {
+    margin-bottom: 40px;
+}
+
+.reading-card {
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 48px;
+    box-shadow:
+        0 2px 4px rgba(139, 115, 85, 0.03),
+        0 8px 16px rgba(139, 115, 85, 0.06),
+        0 24px 48px rgba(139, 115, 85, 0.08);
+}
+
+.chapter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.chapter-title {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 2rem;
+    color: #6B5D4F;
+    margin-bottom: 0;
+    font-weight: 600;
+}
+
+.listen-btn {
+    background: linear-gradient(135deg, #FFD93D 0%, #FFC93D 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    color: #6B5D4F;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Quicksand', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow:
+        0 2px 4px rgba(139, 115, 85, 0.1),
+        0 4px 8px rgba(139, 115, 85, 0.15);
+    transition: all 0.2s ease;
+}
+
+.listen-btn:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 4px 8px rgba(139, 115, 85, 0.15),
+        0 8px 16px rgba(139, 115, 85, 0.2);
+}
+
+.listen-btn.playing {
+    background: linear-gradient(135deg, #45B06A 0%, #3A9A5A 100%);
+    color: #FFFFFF;
+}
+
+.listen-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.listen-btn.playing .listen-icon {
+    animation: pulse-audio 1s ease-in-out infinite;
+}
+
+@keyframes pulse-audio {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+.story-text {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 1.4rem;
+    line-height: 2.2;
+    color: #6B5D4F;
+}
+
+.story-text p {
+    margin-bottom: 24px;
+}
+
+/* Clickable Words */
+.word {
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 2px 4px;
+    margin: 0 2px;
+    border-radius: 4px;
+}
+
+.word:hover {
+    background: rgba(255, 217, 61, 0.3);
+    transform: translateY(-1px);
+}
+
+/* Dictionary Popup */
+.dict-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(107, 93, 79, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 999;
+}
+
+.dict-overlay.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.dictionary-popup {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    right: 0;
+    background: #FFFFFF;
+    border-radius: 24px 24px 0 0;
+    padding: 32px;
+    box-shadow:
+        0 -4px 8px rgba(139, 115, 85, 0.1),
+        0 -8px 16px rgba(139, 115, 85, 0.15);
+    transition: bottom 0.3s ease;
+    z-index: 1000;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.dictionary-popup.show {
+    bottom: 0;
+}
+
+.dict-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.dict-chinese {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 3rem;
+    color: #6B5D4F;
+    font-weight: 700;
+}
+
+.dict-close {
+    background: rgba(139, 115, 85, 0.1);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 1.5rem;
+    color: #8B7355;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.dict-close:hover {
+    background: rgba(139, 115, 85, 0.2);
+    transform: scale(1.1);
+}
+
+.dict-pinyin {
+    font-size: 1.5rem;
+    color: #9D8B7A;
+    margin-bottom: 16px;
+    font-weight: 500;
+}
+
+.dict-definition {
+    font-size: 1.3rem;
+    color: #6B5D4F;
+    margin-bottom: 24px;
+    font-weight: 600;
+}
+
+.dict-example {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 1.1rem;
+    color: #9D8B7A;
+    line-height: 1.8;
+    padding: 16px;
+    background: rgba(139, 115, 85, 0.05);
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+.add-to-deck-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #FFD93D 0%, #FFC93D 100%);
+    border: none;
+    border-radius: 16px;
+    padding: 16px 24px;
+    font-size: 1.1rem;
+    color: #6B5D4F;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Quicksand', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow:
+        0 2px 4px rgba(139, 115, 85, 0.1),
+        0 4px 8px rgba(139, 115, 85, 0.15);
+    transition: all 0.2s ease;
+}
+
+.add-to-deck-btn:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 4px 8px rgba(139, 115, 85, 0.15),
+        0 8px 16px rgba(139, 115, 85, 0.2);
+}
+
+.add-to-deck-btn.added {
+    background: linear-gradient(135deg, #45B06A 0%, #3A9A5A 100%);
+    color: #FFFFFF;
+}
+
+.add-to-deck-btn span {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+/* TTS Notice */
+.tts-notice {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(139, 115, 85, 0.95);
+    border-radius: 16px;
+    padding: 16px 24px;
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.1),
+        0 8px 16px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    max-width: 500px;
+    display: none;
+}
+
+.notice-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #FFFFFF;
+}
+
+.notice-icon {
+    font-size: 1.5rem;
+}
+
+.notice-content p {
+    flex: 1;
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.notice-content button {
+    background: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    color: #6B5D4F;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Quicksand', sans-serif;
+    transition: all 0.2s ease;
+}
+
+.notice-content button:hover {
+    transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    body {
+        padding: 16px;
+    }
+
+    .top-bar {
+        padding: 12px 4px 24px;
+    }
+
+    .book-title {
+        font-size: 1.2rem;
+        order: -1;
+        width: 100%;
+        text-align: left;
+        margin-bottom: 12px;
+    }
+
+    .reading-card {
+        padding: 32px 24px;
+    }
+
+    .chapter-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .chapter-title {
+        font-size: 1.5rem;
+    }
+
+    .listen-btn {
+        align-self: center;
+    }
+
+    .story-text {
+        font-size: 1.2rem;
+        line-height: 2;
+    }
+
+    .tts-notice {
+        left: 10px;
+        right: 10px;
+        transform: none;
+        max-width: none;
+    }
+
+    .dict-chinese {
+        font-size: 2.5rem;
+    }
+
+    .dict-pinyin {
+        font-size: 1.3rem;
+    }
+
+    .dict-definition {
+        font-size: 1.1rem;
+    }
+
+    .dict-example {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .reading-card {
+        padding: 24px 20px;
+    }
+
+    .chapter-title {
+        font-size: 1.3rem;
+    }
+
+    .story-text {
+        font-size: 1.1rem;
+        line-height: 1.9;
+    }
+
+    .dictionary-popup {
+        padding: 24px 20px;
+    }
+
+    .dict-chinese {
+        font-size: 2rem;
+    }
+}

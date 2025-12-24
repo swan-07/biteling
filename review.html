@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiteLing - Daily Review</title>
+    <link rel="stylesheet" href="review.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <button class="back-button" onclick="window.location.href='index.html'">← Back</button>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+                <span class="progress-text" id="progressText">0/20</span>
+            </div>
+            <div class="cookies-earned">+<span id="cookiesEarned">0</span> 🍪</div>
+        </div>
+
+        <!-- Flashcard -->
+        <div class="flashcard-container">
+            <div class="flashcard" id="flashcard">
+                <div class="card-front">
+                    <div class="mastery-indicator">
+                        <div class="mastery-dot"></div>
+                        <div class="mastery-dot"></div>
+                        <div class="mastery-dot"></div>
+                        <div class="mastery-dot"></div>
+                    </div>
+                    <div class="chinese-with-audio">
+                        <div class="chinese" id="chinese">你好</div>
+                        <button class="audio-btn" onclick="playAudio()" title="Play pronunciation">
+                            <span class="audio-icon">🔊</span>
+                        </button>
+                    </div>
+                    <div class="pinyin" id="pinyin">nǐ hǎo</div>
+                </div>
+                <div class="card-back hidden">
+                    <div class="definition" id="definition">hello</div>
+                    <div class="example" id="example">你好！很高兴见到你。</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="show-answer-btn" id="showAnswerBtn">Show Answer</button>
+
+            <div class="rating-buttons hidden" id="ratingButtons">
+                <button class="rating-btn again" onclick="rateCard('again')">
+                    <span class="rating-label">Again</span>
+                    <span class="rating-time">&lt;1m</span>
+                </button>
+                <button class="rating-btn hard" onclick="rateCard('hard')">
+                    <span class="rating-label">Hard</span>
+                    <span class="rating-time">10m</span>
+                </button>
+                <button class="rating-btn good" onclick="rateCard('good')">
+                    <span class="rating-label">Good</span>
+                    <span class="rating-time">1d</span>
+                </button>
+                <button class="rating-btn easy" onclick="rateCard('easy')">
+                    <span class="rating-label">Easy</span>
+                    <span class="rating-time">3d</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="review.js"></script>
+</body>
+</html>

@@ -605,7 +605,7 @@ function endCall() {
 
     // Reset after delay
     setTimeout(() => {
-        document.getElementById('callStatus').textContent = 'Ready to call';
+        document.getElementById('callStatus').textContent = 'Ready to call Cookie';
         document.getElementById('callTimer').textContent = '00:00';
         document.getElementById('callTranscript').innerHTML = '';
     }, 2000);

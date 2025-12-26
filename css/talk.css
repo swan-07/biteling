@@ -138,6 +138,14 @@ body {
     line-height: 1;
 }
 
+.partner-avatar-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(139, 115, 85, 0.15);
+}
+
 .partner-info h2 {
     font-size: 1.5rem;
     color: #6B5D4F;
@@ -551,6 +559,15 @@ input:checked + .toggle-slider:before {
     animation: breathe 3s ease-in-out infinite;
 }
 
+.call-avatar-img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 8px 24px rgba(139, 115, 85, 0.2);
+    animation: breathe 3s ease-in-out infinite;
+}
+
 @keyframes breathe {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.1); }
@@ -667,6 +684,11 @@ input:checked + .toggle-slider:before {
         font-size: 3rem;
     }
 
+    .partner-avatar-img {
+        width: 80px;
+        height: 80px;
+    }
+
     .message-bubble {
         max-width: 90%;
     }
@@ -682,6 +704,11 @@ input:checked + .toggle-slider:before {
 
     .call-avatar {
         font-size: 5rem;
+    }
+
+    .call-avatar-img {
+        width: 150px;
+        height: 150px;
     }
 
     .call-status {

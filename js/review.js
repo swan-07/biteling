@@ -182,18 +182,19 @@ const dailyGoal = 20;
 
 let reviewDeck = buildReviewDeck();
 let cardStates = loadCardStates();
+let sessionQueue = []; // Queue for cards that need to be seen again in this session
 
-// Azure TTS Configuration
+// Azure TTS Configuration (loaded from config.js)
 const AZURE_CONFIG = {
-    subscriptionKey: '',
-    region: '',
+    get subscriptionKey() { return window.ENV_CONFIG?.AZURE_SPEECH_KEY || ''; },
+    get region() { return window.ENV_CONFIG?.AZURE_SPEECH_REGION || ''; }
 };
 
 // Initialize
 function init() {
     if (reviewDeck.length === 0) {
         alert('No cards due for review! Come back later or add more words from books.');
-        window.location.href = 'index.html';
+        window.location.href = '../index.html';
         return;
     }
 
@@ -207,29 +208,88 @@ function init() {
     document.addEventListener('keydown', handleKeyPress);
 }
 
+// Current card being displayed
+let currentCard = null;
+
 // Load card
 function loadCard(index) {
+    // Check if we have cards in the session queue first
+    if (sessionQueue.length > 0) {
+        currentCard = sessionQueue.shift(); // Get first card from queue
+        displayCard(currentCard);
+        return;
+    }
+
     if (index >= reviewDeck.length) {
         finishReview();
         return;
     }
 
-    const card = reviewDeck[index];
+    currentCard = reviewDeck[index];
+    displayCard(currentCard);
+}
+
+// Display a card on screen
+function displayCard(card) {
     const state = getCardState(card.chinese, cardStates);
 
-    document.getElementById('chinese').textContent = card.chinese;
-    document.getElementById('pinyin').textContent = card.pinyin;
-    document.getElementById('definition').textContent = card.definition;
+    // Randomly decide card direction (50/50)
+    const showChinese = Math.random() < 0.5;
+
+    if (showChinese) {
+        // Chinese → English
+        document.getElementById('question').textContent = card.chinese;
+        document.getElementById('hint').textContent = card.pinyin;
+        document.getElementById('answer').textContent = card.definition;
+    } else {
+        // English → Chinese
+        document.getElementById('question').textContent = card.definition;
+        document.getElementById('hint').textContent = ''; // No pinyin hint for English→Chinese
+        document.getElementById('answer').textContent = card.chinese + ' (' + card.pinyin + ')';
+    }
+
     document.getElementById('example').textContent = card.example;
 
     // Update mastery indicator
     updateMasteryIndicator(state.masteryLevel);
+
+    // Update button times based on current state
+    updateButtonTimes(state);
 
     // Reset card state
     showingAnswer = false;
     document.querySelector('.card-back').classList.add('hidden');
     document.getElementById('showAnswerBtn').classList.remove('hidden');
     document.getElementById('ratingButtons').classList.add('hidden');
+}
+
+// Update button times dynamically
+function updateButtonTimes(state) {
+    const againBtn = document.querySelector('.rating-btn.again .rating-time');
+    const goodBtn = document.querySelector('.rating-btn.good .rating-time');
+
+    // Again is always <1 minute in session
+    againBtn.textContent = '<1m';
+
+    // Good time depends on current interval
+    let goodTime;
+    if (state.interval === 0 || state.reviews === 0) {
+        // New card
+        goodTime = '1d';
+    } else if (state.interval < 60) {
+        // Less than 1 hour
+        goodTime = Math.round(state.interval * state.ease) + 'm';
+    } else if (state.interval < 1440) {
+        // Less than 1 day
+        const hours = Math.round((state.interval * state.ease) / 60);
+        goodTime = hours + 'h';
+    } else {
+        // Days
+        const days = Math.round((state.interval * state.ease) / 1440);
+        goodTime = days + 'd';
+    }
+
+    goodBtn.textContent = goodTime;
 }
 
 // Update mastery indicator
@@ -255,9 +315,9 @@ function showAnswer() {
 // Rate card with SRS
 function rateCard(rating) {
     if (!showingAnswer) return;
+    if (!currentCard) return;
 
-    const card = reviewDeck[currentCardIndex];
-    let state = getCardState(card.chinese, cardStates);
+    let state = getCardState(currentCard.chinese, cardStates);
 
     // Calculate next interval
     state = calculateNextInterval(state, rating);
@@ -268,19 +328,36 @@ function rateCard(rating) {
     }
 
     // Save state
-    cardStates[card.chinese] = state;
+    cardStates[currentCard.chinese] = state;
     saveCardStates(cardStates);
 
-    // Award cookie
+    // If rated "Again", add back to session queue (show again soon)
+    if (rating === 'again') {
+        // Add to queue after a few cards (position 3-5)
+        const position = Math.min(3, sessionQueue.length);
+        sessionQueue.splice(position, 0, currentCard);
+
+        // Don't award cookie or increment counters for "Again"
+        // Just load next card
+        setTimeout(() => {
+            loadCard(currentCardIndex);
+        }, 200);
+        return;
+    }
+
+    // Award cookie and increment counters (only for "Good")
     cookiesEarned++;
     cardsReviewed++;
 
     updateProgress();
 
     // Move to next card
-    currentCardIndex++;
+    if (sessionQueue.length === 0) {
+        currentCardIndex++;
+    }
 
-    if (currentCardIndex < reviewDeck.length) {
+    // Load next card
+    if (currentCardIndex < reviewDeck.length || sessionQueue.length > 0) {
         setTimeout(() => {
             loadCard(currentCardIndex);
         }, 200);
@@ -291,7 +368,8 @@ function rateCard(rating) {
 
 // Update progress
 function updateProgress() {
-    const progress = (cardsReviewed / reviewDeck.length) * 100;
+    // Progress is based on original deck size, not including re-queued cards
+    const progress = Math.min(100, (currentCardIndex / reviewDeck.length) * 100);
     document.getElementById('progressBar').style.width = `${progress}%`;
     document.getElementById('progressText').textContent = `${cardsReviewed}/${reviewDeck.length}`;
     document.getElementById('cookiesEarned').textContent = cookiesEarned;
@@ -341,8 +419,8 @@ function finishReview() {
 
 // Play audio pronunciation
 function playAudio() {
-    const card = reviewDeck[currentCardIndex];
-    const text = card.chinese;
+    if (!currentCard) return;
+    const text = currentCard.chinese;
 
     // Try Azure TTS first
     if (AZURE_CONFIG.subscriptionKey && AZURE_CONFIG.region) {
@@ -413,13 +491,9 @@ function handleKeyPress(e) {
                 rateCard('again');
                 break;
             case 'Digit2':
-                rateCard('hard');
-                break;
             case 'Digit3':
-                rateCard('good');
-                break;
             case 'Digit4':
-                rateCard('easy');
+                rateCard('good');
                 break;
         }
     }

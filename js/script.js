@@ -80,16 +80,17 @@ document.addEventListener('DOMContentLoaded', () => {
     startCard.addEventListener('click', () => {
         // Only allow review if not already completed today
         if (!userData.dailyReviewComplete) {
-            window.location.href = 'review.html';
+            window.location.href = 'pages/review.html';
         }
     });
 
     // Activity buttons
     const activityButtons = document.querySelectorAll('.activity-btn');
-    const activities = ['Books', 'Watch', 'Speak', 'Roadmap'];
+    const activities = ['Books', 'Watch', 'Talk', 'Roadmap'];
     const activityPages = {
-        'Books': 'books.html',
-        'Roadmap': 'roadmap.html'
+        'Books': 'pages/books.html',
+        'Talk': 'pages/talk.html',
+        'Roadmap': 'pages/roadmap.html'
     };
 
     activityButtons.forEach((button, index) => {

@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BiteLing - Daily Review</title>
-    <link rel="stylesheet" href="review.css">
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <link rel="stylesheet" href="../css/review.css">
 </head>
 <body>
     <div class="container">
         <!-- Top Bar -->
         <div class="top-bar">
-            <button class="back-button" onclick="window.location.href='index.html'">← Back</button>
+            <button class="back-button" onclick="window.location.href='../index.html'">← Back</button>
             <div class="progress-bar">
                 <div class="progress-fill" id="progressBar"></div>
                 <span class="progress-text" id="progressText">0/20</span>
@@ -21,6 +22,9 @@
         <!-- Flashcard -->
         <div class="flashcard-container">
             <div class="flashcard" id="flashcard">
+                <button class="audio-btn-corner" onclick="playAudio()" title="Play pronunciation">
+                    <span class="audio-icon">🔊</span>
+                </button>
                 <div class="card-front">
                     <div class="mastery-indicator">
                         <div class="mastery-dot"></div>
@@ -28,16 +32,11 @@
                         <div class="mastery-dot"></div>
                         <div class="mastery-dot"></div>
                     </div>
-                    <div class="chinese-with-audio">
-                        <div class="chinese" id="chinese">你好</div>
-                        <button class="audio-btn" onclick="playAudio()" title="Play pronunciation">
-                            <span class="audio-icon">🔊</span>
-                        </button>
-                    </div>
-                    <div class="pinyin" id="pinyin">nǐ hǎo</div>
+                    <div class="question" id="question">你好</div>
+                    <div class="hint" id="hint">nǐ hǎo</div>
                 </div>
                 <div class="card-back hidden">
-                    <div class="definition" id="definition">hello</div>
+                    <div class="answer" id="answer">hello</div>
                     <div class="example" id="example">你好！很高兴见到你。</div>
                 </div>
             </div>
@@ -52,22 +51,15 @@
                     <span class="rating-label">Again</span>
                     <span class="rating-time">&lt;1m</span>
                 </button>
-                <button class="rating-btn hard" onclick="rateCard('hard')">
-                    <span class="rating-label">Hard</span>
-                    <span class="rating-time">10m</span>
-                </button>
                 <button class="rating-btn good" onclick="rateCard('good')">
                     <span class="rating-label">Good</span>
                     <span class="rating-time">1d</span>
-                </button>
-                <button class="rating-btn easy" onclick="rateCard('easy')">
-                    <span class="rating-label">Easy</span>
-                    <span class="rating-time">3d</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <script src="review.js"></script>
+    <script src="../config.js"></script>
+    <script src="../js/review.js"></script>
 </body>
 </html>

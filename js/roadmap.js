@@ -1,6 +1,6 @@
 // Load user data and update roadmap
 document.addEventListener('DOMContentLoaded', () => {
-    const userData = JSON.parse(localStorage.getItem('bitelingData') || '{"streak":0,"cookies":0,"cardsReviewed":0,"dailyGoal":20,"level":1}');
+    const userData = JSON.parse(localStorage.getItem('bitelingData') || '{"streak":0,"cookies":0,"cardsReviewed":0,"dailyGoal":20,"level":1,"wordsLearned":0}');
 
     // Update user level display
     document.getElementById('userLevel').textContent = `Level ${userData.level}`;
@@ -15,10 +15,16 @@ document.addEventListener('DOMContentLoaded', () => {
         6: 5000
     };
 
-    // Calculate words learned (simplified - based on cards reviewed)
-    // In real implementation, this would track actual unique words
-    const wordsPerCard = 1; // Assuming each card is one word
-    const totalWordsLearned = userData.cardsReviewed * wordsPerCard;
+    // Load card states to count mastered words
+    const cardStates = JSON.parse(localStorage.getItem('cardStates') || '{}');
+    const MASTERY_THRESHOLD = 4;
+
+    // Count only truly mastered words (mastery level 4)
+    const masteredWords = Object.values(cardStates).filter(state =>
+        state.masteryLevel === MASTERY_THRESHOLD
+    ).length;
+
+    const totalWordsLearned = masteredWords;
 
     // Update all level nodes
     for (let level = 1; level <= 6; level++) {
@@ -34,9 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const wordsInThisLevel = Math.max(0, Math.min(currentLevelVocab, totalWordsLearned - prevVocab));
         const progress = (wordsInThisLevel / currentLevelVocab) * 100;
 
+        // Level is only completed if ALL words in it are mastered
+        const isLevelFullyMastered = totalWordsLearned >= hskVocab[level];
+        const canAccessLevel = totalWordsLearned >= prevVocab;
+
         // Update node state
-        if (level < userData.level) {
-            // Completed level
+        if (isLevelFullyMastered) {
+            // Completed level - mastered ALL words
             node.classList.remove('active', 'locked');
             node.classList.add('completed');
             if (progressBar) progressBar.style.width = '100%';
@@ -46,14 +56,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const nodeIcon = node.querySelector('.node-icon');
             const nodeNumber = node.querySelector('.node-number');
             if (nodeNumber) nodeNumber.textContent = '✓';
-        } else if (level === userData.level) {
-            // Current active level
+        } else if (canAccessLevel) {
+            // Current active level - working on it but not all mastered yet
             node.classList.remove('completed', 'locked');
             node.classList.add('active');
             if (progressBar) progressBar.style.width = `${progress}%`;
             if (progressText) progressText.textContent = `${wordsInThisLevel}/${currentLevelVocab} words`;
         } else {
-            // Locked level
+            // Locked level - haven't mastered previous level yet
             node.classList.remove('active', 'completed');
             node.classList.add('locked');
             if (progressBar) progressBar.style.width = '0%';

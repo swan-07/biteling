@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiteLing - Talk Practice</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <link rel="stylesheet" href="../css/talk.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <button class="back-button" onclick="window.location.href='../index.html'">← Back</button>
+            <h1 class="page-title">Talk Practice 💬</h1>
+            <div class="cookies-earned">+<span id="cookiesEarned">0</span> 🍪</div>
+        </div>
+
+        <!-- Conversation Partner Card -->
+        <div class="partner-card">
+            <div class="partner-avatar">🤖</div>
+            <div class="partner-info">
+                <h2>AI Language Partner</h2>
+                <p>Practice speaking Chinese with your AI conversation partner!</p>
+                <div class="cost-badge">Earn 5 🍪 per conversation</div>
+            </div>
+        </div>
+
+        <!-- Mode Selector -->
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="chat" title="Text chat with optional voice input and audio">
+                <span class="mode-icon">💬</span>
+                <span class="mode-label">Chat</span>
+            </button>
+            <button class="mode-btn" data-mode="call" title="Audio-only conversation mode">
+                <span class="mode-icon">📞</span>
+                <span class="mode-label">Call</span>
+            </button>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container" id="chatContainer">
+            <!-- Output Mode Toggle -->
+            <div class="output-controls">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="autoPlayAudio" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">Auto-play AI responses</span>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai-message">
+                    <div class="message-bubble">
+                        <button class="play-audio-btn" onclick="playMessageAudio(this, '你好！我是你的中文对话伙伴。')" title="Play audio">
+                            <span class="audio-icon">🔊</span>
+                        </button>
+                        <div class="message-chinese">你好！我是你的中文对话伙伴。</div>
+                        <div class="message-pinyin">nǐ hǎo! wǒ shì nǐ de zhōng wén duì huà huǒ bàn.</div>
+                        <div class="message-english">Hello! I'm your Chinese conversation partner.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-container">
+                <button class="mic-button" id="micButton" title="Speak in Chinese">
+                    <span class="mic-icon">🎤</span>
+                </button>
+                <input type="text"
+                       id="userInput"
+                       class="text-input"
+                       placeholder="Type in Chinese or use voice..."
+                       autocomplete="off">
+                <button class="send-button" id="sendButton">
+                    <span>Send</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Call Mode Screen -->
+        <div class="call-screen hidden" id="callScreen">
+            <div class="call-avatar">🤖</div>
+            <div class="call-status" id="callStatus">Ready to call</div>
+            <div class="call-timer" id="callTimer">00:00</div>
+
+            <div class="call-transcript" id="callTranscript">
+                <!-- Live transcript will appear here -->
+            </div>
+
+            <div class="call-controls">
+                <button class="call-button start" id="startCallButton">
+                    <span class="call-icon">📞</span>
+                    <span>Start Call</span>
+                </button>
+                <button class="call-button end hidden" id="endCallButton">
+                    <span class="call-icon">📴</span>
+                    <span>End Call</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Azure Notice -->
+        <div class="azure-notice" id="azureNotice">
+            <div class="notice-content">
+                <span class="notice-icon">🔑</span>
+                <p>To enable AI conversations, add your Azure OpenAI API key in the code.</p>
+                <button onclick="document.getElementById('azureNotice').style.display='none'">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../js/talk.js"></script>
+</body>
+</html>

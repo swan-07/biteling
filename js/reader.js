@@ -196,7 +196,11 @@ function loadBook() {
     currentBook = bookContent[bookId];
     document.getElementById('bookTitle').textContent = currentBook.title;
 
-    displayChapter(0);
+    // Load saved progress for this book
+    const savedProgress = JSON.parse(localStorage.getItem('bookProgress') || '{}');
+    const lastChapter = savedProgress[bookId] || 0;
+
+    displayChapter(lastChapter);
 }
 
 // Display chapter
@@ -222,6 +226,21 @@ function displayChapter(chapterIndex) {
     // Update navigation buttons
     document.getElementById('prevChapter').disabled = chapterIndex === 0;
     document.getElementById('nextChapter').disabled = chapterIndex === currentBook.chapters.length - 1;
+
+    // Save reading progress
+    saveProgress(chapterIndex);
+}
+
+// Save reading progress
+function saveProgress(chapterIndex) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookId = urlParams.get('book');
+
+    if (!bookId) return;
+
+    const savedProgress = JSON.parse(localStorage.getItem('bookProgress') || '{}');
+    savedProgress[bookId] = chapterIndex;
+    localStorage.setItem('bookProgress', JSON.stringify(savedProgress));
 }
 
 // Make words clickable
@@ -347,12 +366,11 @@ function setupNavigation() {
 // TEXT-TO-SPEECH (Azure Speech Services)
 // ========================================
 
-// Azure Configuration
-// To enable TTS, get your Azure Speech API key from: https://portal.azure.com
-// Create a Speech Service resource and copy your key and region
+// Azure Configuration (loaded from config.js)
+// To enable TTS, set environment variables in config.js or use the browser console
 const AZURE_CONFIG = {
-    subscriptionKey: '', // Add your Azure Speech API key here
-    region: '', // Add your region here (e.g., 'eastus', 'westus', 'westeurope')
+    get subscriptionKey() { return window.ENV_CONFIG?.AZURE_SPEECH_KEY || ''; },
+    get region() { return window.ENV_CONFIG?.AZURE_SPEECH_REGION || ''; }
 };
 
 let isPlaying = false;

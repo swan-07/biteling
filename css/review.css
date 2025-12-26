@@ -119,6 +119,7 @@ body {
     justify-content: center;
     align-items: center;
     text-align: center;
+    position: relative;
     box-shadow:
         0 2px 4px rgba(139, 115, 85, 0.03),
         0 8px 16px rgba(139, 115, 85, 0.06),
@@ -152,59 +153,64 @@ body {
     transform: scale(1.1);
 }
 
-/* Chinese with Audio */
-.chinese-with-audio {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    margin-bottom: 20px;
-}
-
-.chinese {
-    font-family: 'Noto Sans SC', sans-serif;
-    font-size: 5rem;
-    font-weight: 700;
-    color: #6B5D4F;
-    line-height: 1.2;
-}
-
-.audio-btn {
+/* Audio Button - Top Right Corner */
+.audio-btn-corner {
+    position: absolute;
+    top: 20px;
+    right: 20px;
     background: rgba(139, 115, 85, 0.1);
     border: none;
     border-radius: 50%;
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    flex-shrink: 0;
+    z-index: 10;
 }
 
-.audio-btn:hover {
+.audio-btn-corner:hover {
     background: rgba(139, 115, 85, 0.2);
     transform: scale(1.1);
 }
 
-.audio-btn:active {
+.audio-btn-corner:active {
     transform: scale(0.95);
 }
 
 .audio-icon {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     line-height: 1;
 }
 
-.pinyin {
+/* Card Content */
+.card-front, .card-back {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.question {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 5rem;
+    font-weight: 700;
+    color: #6B5D4F;
+    line-height: 1.2;
+    margin-bottom: 20px;
+}
+
+.hint {
     font-size: 2rem;
     color: #9D8B7A;
     font-weight: 500;
     margin-bottom: 16px;
 }
 
-.definition {
+.answer {
     font-size: 2.5rem;
     color: #6B5D4F;
     font-weight: 600;
@@ -260,23 +266,23 @@ body {
 
 .rating-buttons {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
 }
 
 .rating-btn {
     background: #FFFFFF;
     border: none;
-    border-radius: 12px;
-    padding: 16px 12px;
+    border-radius: 16px;
+    padding: 24px 20px;
     cursor: pointer;
     font-family: 'Quicksand', sans-serif;
     transition: all 0.2s ease;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
     box-shadow:
-        0 1px 2px rgba(139, 115, 85, 0.04),
+        0 2px 4px rgba(139, 115, 85, 0.06),
         0 2px 4px rgba(139, 115, 85, 0.06);
 }
 
@@ -292,12 +298,12 @@ body {
 }
 
 .rating-label {
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     font-weight: 600;
 }
 
 .rating-time {
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 500;
     opacity: 0.7;
 }
@@ -306,16 +312,8 @@ body {
     color: #D64545;
 }
 
-.rating-btn.hard .rating-label {
-    color: #E8A03D;
-}
-
 .rating-btn.good .rating-label {
     color: #45B06A;
-}
-
-.rating-btn.easy .rating-label {
-    color: #4A90E2;
 }
 
 /* Responsive */
@@ -325,15 +323,15 @@ body {
         min-height: 350px;
     }
 
-    .chinese {
+    .question {
         font-size: 4rem;
     }
 
-    .pinyin {
+    .hint {
         font-size: 1.5rem;
     }
 
-    .definition {
+    .answer {
         font-size: 2rem;
     }
 
@@ -356,15 +354,15 @@ body {
         min-height: 300px;
     }
 
-    .chinese {
+    .question {
         font-size: 3rem;
     }
 
-    .pinyin {
+    .hint {
         font-size: 1.2rem;
     }
 
-    .definition {
+    .answer {
         font-size: 1.5rem;
     }
 

@@ -22,6 +22,19 @@ function saveUserData() {
     localStorage.setItem('bitelingData', JSON.stringify(userData));
 }
 
+// Calculate cards due for review
+function getCardsDueCount() {
+    const cards = userData.cards || [];
+    const now = Date.now();
+
+    return cards.filter(card => {
+        // Cards with no nextReview are new cards, always due
+        if (!card.nextReview) return true;
+        // Cards are due if nextReview time has passed
+        return card.nextReview <= now;
+    }).length;
+}
+
 // Update display
 function updateUI() {
     document.querySelector('.level').textContent = `Level ${userData.level}`;
@@ -33,24 +46,37 @@ function updateUI() {
     const startHeading = startCard.querySelector('h1');
     const startSubtext = startCard.querySelector('p');
 
-    // Check if daily review is complete
-    if (userData.dailyReviewComplete) {
-        // Change to completed state
+    // Get actual cards due for review
+    const cardsDue = getCardsDueCount();
+    const cardsReviewedToday = userData.cardsReviewedToday || 0;
+
+    // Check if there are no cards due
+    if (cardsDue === 0 && cardsReviewedToday > 0) {
+        // Change to completed state - turn green!
         startCard.classList.add('completed');
         startHeading.textContent = '✓ DONE';
         startSubtext.textContent = 'Come back tomorrow!';
         cardStatsDiv.innerHTML = `
-            <div>${userData.cardsReviewed}/${userData.dailyGoal} cards</div>
+            <div>${cardsReviewedToday} cards reviewed</div>
             <div>Review complete! 🎉</div>
         `;
+    } else if (cardsDue === 0) {
+        // No cards to review at all - also turn green!
+        startCard.classList.add('completed');
+        startHeading.textContent = '✓ DONE';
+        startSubtext.textContent = 'No cards due yet';
+        cardStatsDiv.innerHTML = `
+            <div>0 cards</div>
+            <div>Add words from Books! 📚</div>
+        `;
     } else {
-        // Normal state
+        // Normal state - cards are due
         startCard.classList.remove('completed');
         startHeading.textContent = 'START';
         startSubtext.textContent = 'Daily Review';
         cardStatsDiv.innerHTML = `
-            <div>${userData.cardsReviewed}/${userData.dailyGoal} cards</div>
-            <div>Earn +5 🍪</div>
+            <div>${cardsDue} cards due</div>
+            <div>Earn +${Math.min(cardsDue, 20)} 🍪</div>
         `;
     }
 

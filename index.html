@@ -15,7 +15,7 @@
             <div class="user-info">
                 <span class="level">Level 1</span>
                 <span class="streak">🔥 0</span>
-                <span class="cookies">🍪 0</span>
+                <button class="cookies" id="cookiesBtn">🍪 0</button>
                 <button class="user-icon">👤</button>
             </div>
         </div>
@@ -57,6 +57,107 @@
         </div>
     </div>
 
-    <script src="js/script.js"></script>
+    <!-- Account Menu Modal -->
+    <div class="modal-overlay hidden account-dropdown" id="accountModal">
+        <div class="modal-content account-menu">
+            <button class="modal-close" id="closeAccountModal">✕</button>
+            <div class="account-info">
+                <div class="account-emoji" id="accountEmoji">🍕</div>
+                <div class="account-email" id="accountEmail">user@email.com</div>
+            </div>
+            <div class="account-menu-items">
+                <button class="account-menu-btn" id="accountBtn">Account</button>
+                <button class="account-menu-btn danger" id="signOutBtn">Sign Out</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay hidden" id="loginModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeModal">✕</button>
+
+            <!-- Sign In Form -->
+            <div class="auth-form" id="signInForm">
+                <h2>Sign In</h2>
+                <form id="emailSignInForm">
+                    <div class="input-group">
+                        <input type="email" id="signInEmail" placeholder="Email" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="signInPassword" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Sign In</button>
+                </form>
+                <p class="switch-auth">
+                    Don't have an account? <a href="#" id="showSignUp">Sign Up</a>
+                </p>
+            </div>
+
+            <!-- Sign Up Form -->
+            <div class="auth-form hidden" id="signUpForm">
+                <h2>Create Account</h2>
+                <form id="emailSignUpForm">
+                    <div class="input-group">
+                        <input type="email" id="signUpEmail" placeholder="Email" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="signUpPassword" placeholder="Password (min 6 characters)" required minlength="6">
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="signUpPasswordConfirm" placeholder="Confirm Password" required minlength="6">
+                    </div>
+                    <button type="submit" class="submit-btn">Create Account</button>
+                </form>
+                <p class="switch-auth">
+                    Already have an account? <a href="#" id="showSignIn">Sign In</a>
+                </p>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-message hidden" id="errorMessage"></div>
+
+            <!-- Loading Spinner -->
+            <div class="loading-spinner hidden" id="loadingSpinner"></div>
+        </div>
+    </div>
+
+    <!-- Purchase Modal -->
+    <div class="modal-overlay hidden" id="purchaseModal">
+        <div class="modal-content purchase-modal">
+            <button class="modal-close" id="closePurchaseModal">✕</button>
+            <h2>Get More Cookies</h2>
+            <p class="modal-subtitle">Support BiteLing and boost your learning!</p>
+
+            <div class="purchase-options">
+                <div class="purchase-option">
+                    <div class="purchase-icon">🍪</div>
+                    <h3>Cookie Pack</h3>
+                    <div class="purchase-amount">500 Cookies</div>
+                    <div class="purchase-price">$5</div>
+                    <button class="purchase-btn" data-type="cookies">Purchase</button>
+                </div>
+
+                <div class="purchase-option premium">
+                    <div class="premium-badge">BEST VALUE</div>
+                    <div class="purchase-icon">👑</div>
+                    <h3>BiteLing+</h3>
+                    <div class="purchase-features">
+                        <div>👑 Crown icon badge</div>
+                        <div>🍪 100 cookies daily</div>
+                        <div>More features coming soon!</div>
+                    </div>
+                    <div class="purchase-price">$20</div>
+                    <button class="purchase-btn premium-btn" data-type="plus">Get BiteLing+</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase & User Data -->
+    <script src="env-config.js" onerror="this.remove()"></script>
+    <script src="firebase-config.js"></script>
+    <script src="firebase-config.local.js" onerror="this.remove()"></script>
+    <script type="module" src="js/script.js"></script>
 </body>
 </html>

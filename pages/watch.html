@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiteLing - Watch</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <link rel="stylesheet" href="../css/watch.css">
+</head>
+<body>
+    <!-- Video Feed Container -->
+    <div class="feed-container" id="feedContainer">
+        <!-- Video will be inserted here -->
+    </div>
+
+    <!-- Top Overlay -->
+    <div class="top-overlay">
+        <button class="close-button" onclick="window.location.href='../index.html'">✕</button>
+        <div class="hsk-badge" id="hskBadge">HSK 1</div>
+        <div class="cookies-display">🍪 <span id="cookiesCount">0</span></div>
+    </div>
+
+
+    <!-- Subtitles Display -->
+    <div class="subtitles-container" id="subtitlesContainer">
+        <div class="subtitle chinese-subtitle hidden" id="chineseSubtitle"></div>
+        <div class="subtitle pinyin-subtitle hidden" id="pinyinSubtitle"></div>
+        <div class="subtitle english-subtitle hidden" id="englishSubtitle"></div>
+    </div>
+
+    <!-- Side Actions -->
+    <div class="side-actions">
+        <button class="action-btn replay-btn" id="replayBtn" title="Replay video">
+            <span class="action-icon">🔄</span>
+        </button>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator" id="scrollIndicator">
+        <div class="scroll-text">Scroll up for next video</div>
+        <div class="scroll-cost">-5 🍪</div>
+        <div class="scroll-arrow">↑</div>
+    </div>
+
+    <!-- Cookie Warning -->
+    <div class="cookie-warning hidden" id="cookieWarning">
+        <div class="warning-content">
+            <span class="warning-icon">🍪</span>
+            <p>Not enough cookies! Complete reviews to earn more.</p>
+            <button onclick="window.location.href='../index.html'">Go to Reviews</button>
+        </div>
+    </div>
+
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <!-- Vercel environment variables (auto-generated at build time) -->
+    <script src="../env-config.js" onerror="this.remove()"></script>
+    <!-- Load template config, then local config overrides it -->
+    <script src="../youtube-config.js"></script>
+    <script src="../youtube-config.local.js" onerror="this.remove()"></script>
+    <script src="../js/watch.js"></script>
+</body>
+</html>

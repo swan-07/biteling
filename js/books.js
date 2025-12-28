@@ -1,3 +1,6 @@
+// Import user data manager
+import userDataManager from './user-data.js';
+
 // Book catalog - Chinese graded readers
 const bookCatalog = [
     {
@@ -87,15 +90,22 @@ let userData = {};
 let purchasedBooks = [];
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    loadUserData();
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadUserData();
     setupTabs();
     renderStoreBooks();
     renderLibraryBooks();
 });
 
 // Load user data
-function loadUserData() {
+async function loadUserData() {
+    // Initialize user data manager
+    await userDataManager.init();
+
+    // Get cookies from userDataManager (Firebase-first)
+    const cookies = userDataManager.getCookies();
+
+    // Load old bitelingData for other fields
     const saved = localStorage.getItem('bitelingData');
     if (saved) {
         userData = JSON.parse(saved);
@@ -108,6 +118,9 @@ function loadUserData() {
             level: 1
         };
     }
+
+    // Override cookies with userDataManager value
+    userData.cookies = cookies;
 
     // Load purchased books
     const savedBooks = localStorage.getItem('purchasedBooks');
@@ -224,7 +237,7 @@ function renderLibraryBooks() {
 }
 
 // Buy book
-function buyBook(bookId) {
+async function buyBook(bookId) {
     const book = bookCatalog.find(b => b.id === bookId);
     if (!book) return;
 
@@ -234,9 +247,9 @@ function buyBook(bookId) {
         return;
     }
 
-    // Deduct cookies
+    // Deduct cookies using userDataManager
+    await userDataManager.subtractCookies(book.price);
     userData.cookies -= book.price;
-    saveUserData();
 
     // Add to purchased books
     purchasedBooks.push(bookId);
@@ -297,3 +310,7 @@ function readBook(bookId) {
     // Navigate to reader
     window.location.href = `reader.html?book=${bookId}`;
 }
+
+// Expose functions to window for onclick handlers
+window.buyBook = buyBook;
+window.readBook = readBook;

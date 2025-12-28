@@ -398,10 +398,10 @@ function finishReview() {
     else if (masteredWords >= 300) userData.level = 2;
     else if (masteredWords >= 150) userData.level = 2;
 
-    // Mark daily review complete
+    // Mark daily review complete with today's date
     if (cardsReviewed >= dailyGoal) {
         userData.streak += 1;
-        userData.dailyReviewComplete = true;
+        userData.lastReviewDate = new Date().toDateString();
     }
 
     localStorage.setItem('bitelingData', JSON.stringify(userData));

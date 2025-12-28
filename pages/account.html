@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account - BiteLing</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <link rel="stylesheet" href="../css/account.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <button class="back-btn" onclick="window.location.href='../index.html'">← Back</button>
+            <h1>Account</h1>
+        </div>
+
+        <!-- User Stats Card -->
+        <div class="stats-card">
+            <div class="user-icon-large" id="userIconLarge">🍕</div>
+
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Level</div>
+                    <div class="stat-value" id="userLevel">1</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Streak</div>
+                    <div class="stat-value" id="userStreak">🔥 0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Words Learned</div>
+                    <div class="stat-value" id="wordsLearned">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reminder Section -->
+        <div class="reminder-section">
+            <div class="reminder-text">
+                <span>Remind me everyday at</span>
+                <div class="time-selector">
+                    <select id="reminderHour" class="time-input">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8" selected>8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                    </select>
+                    <span>:</span>
+                    <select id="reminderMinute" class="time-input">
+                        <option value="00" selected>00</option>
+                        <option value="15">15</option>
+                        <option value="30">30</option>
+                        <option value="45">45</option>
+                    </select>
+                    <select id="reminderPeriod" class="period-input">
+                        <option value="AM">AM</option>
+                        <option value="PM" selected>PM</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Info Section -->
+        <div class="info-section">
+            <h2>Account Information</h2>
+            <div class="info-item">
+                <span class="info-label">Email</span>
+                <span class="info-value" id="userEmail">user@email.com</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Cookies</span>
+                <span class="info-value" id="userCookies">🍪 0</span>
+            </div>
+        </div>
+
+        <!-- Friends Section -->
+        <div class="info-section">
+            <div class="friends-header">
+                <h2>Friends</h2>
+                <button class="add-friend-btn" id="addFriendBtn">+</button>
+            </div>
+            <div class="friends-list" id="friendsList">
+                <!-- Friends will be dynamically loaded here -->
+                <div class="no-friends" id="noFriends">
+                    <p>No friends yet. Add some friends to share cookies!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions-section">
+            <button class="action-btn danger" id="signOutBtn">Sign Out</button>
+        </div>
+    </div>
+
+    <!-- Add Friend Modal -->
+    <div class="modal-overlay hidden" id="addFriendModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeAddFriendModal">✕</button>
+            <h2>Add Friend</h2>
+            <form id="addFriendForm">
+                <input type="email" id="friendEmail" placeholder="Friend's email" required>
+                <button type="submit" class="modal-btn">Add Friend</button>
+            </form>
+            <div class="error-message hidden" id="addFriendError"></div>
+        </div>
+    </div>
+
+    <!-- Firebase & User Data -->
+    <script src="../env-config.js" onerror="this.remove()"></script>
+    <script src="../firebase-config.js"></script>
+    <script src="../firebase-config.local.js" onerror="this.remove()"></script>
+    <script type="module" src="../js/account.js"></script>
+</body>
+</html>

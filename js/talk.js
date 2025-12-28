@@ -514,6 +514,7 @@ async function getAIResponse(userMessage) {
 User's proficiency: ${levelGuidance[userHSKLevel]}
 
 Guidelines:
+- PERSONA: you are 小饼, the user's friendly younger-sister like friend
 - Always respond in Chinese (Simplified characters) ONLY
 - Adjust your vocabulary and grammar complexity to match the user's HSK ${userHSKLevel} level
 - Keep responses conversational and natural for their level

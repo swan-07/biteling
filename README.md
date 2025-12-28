@@ -198,6 +198,19 @@ BiteLingSite/
 - Earn 5 cookies per 5 messages
 - Powered by Azure OpenAI GPT
 
+### Watch ([pages/watch.html](pages/watch.html))
+- **TikTok-style video learning feed**
+- HSK-adaptive content (automatically matches your level)
+- **i+1 learning**: Each video introduces slightly new content
+- Interactive features:
+  - Chinese/Pinyin/English subtitles (toggleable)
+  - Tap words to add to SRS deck
+  - Playback speed control (0.5x - 1.5x)
+  - Replay videos
+- **Swipe up for next video** (costs 5 🍪)
+- Track progress per HSK level
+- Learn naturally through comprehensible input
+
 ### Roadmap ([pages/roadmap.html](pages/roadmap.html))
 - HSK levels 1-6 visualization
 - Progress tracking by mastered words
@@ -207,6 +220,7 @@ BiteLingSite/
 
 - Daily Review: Earn 1 cookie per card (only "Good" rating)
 - Talk: Earn 5 cookies per 5 messages
+- Watch: Spend 5 cookies per video
 - Books: Spend cookies to unlock books
 
 ## Technologies Used

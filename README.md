@@ -6,11 +6,13 @@ A gamified Chinese language learning platform with Anki-style spaced repetition 
 
 - 📚 **Daily Review**: Spaced repetition flashcards with mastery tracking
 - 📖 **Books**: Read Chinese stories with interactive dictionary
+- 📷 **Camera** (BiteLing+ only): Live camera translation of Chinese text
 - 💬 **Talk**: AI conversation partner for speaking practice
+- 🎬 **Watch**: TikTok-style video feed with HSK-adaptive content
 - 🗺️ **Roadmap**: HSK level progression (1-6)
 - 🍪 **Cookie Economy**: Earn cookies through learning activities
 
-## Setup Instructions
+## Quick Start
 
 ### 1. Clone from GitHub
 
@@ -19,7 +21,37 @@ git clone https://github.com/yourusername/biteling.git
 cd biteling
 ```
 
-### 2. Configure API Keys (Optional)
+### 2. Run Locally (No Setup Required!)
+
+```bash
+# Using Python
+python3 -m http.server 8000
+
+# Using Node.js
+npx http-server
+
+# Using PHP
+php -S localhost:8000
+```
+
+Then open: http://localhost:8000
+
+The app works immediately! Configure services below for full functionality.
+
+### 3. Configure Services (Optional)
+
+📖 **All setup guides are in [docs/setup/](docs/setup/README.md)**
+
+**Core Services:**
+- 🔐 [Firebase Setup](docs/setup/FIREBASE_SETUP.md) - User accounts & data sync
+- 🔒 [Security Rules](docs/setup/FIREBASE_SECURITY_RULES.md) - Firebase permissions
+
+**Optional Services:**
+- 📺 [YouTube API](docs/setup/YOUTUBE_SETUP.md) - Video content for Watch feature
+- 📧 [EmailJS](docs/setup/EMAILJS_QUICK_SETUP.md) - Automatic friend invitations
+- 🚀 [Deploy to Vercel](docs/setup/VERCEL_QUICK_SETUP.md) - Go live in 2 minutes
+
+### 4. Legacy Azure AI Setup (Optional)
 
 BiteLing uses Azure AI services for enhanced features. These are **optional** - the app works without them, but with limited functionality.
 
@@ -128,36 +160,41 @@ Then open: http://localhost:8000
 ```
 BiteLingSite/
 ├── index.html              # Homepage
-├── config.js               # Environment configuration
 ├── .env                    # Environment variables (gitignored)
 ├── .env.example            # Example environment file
 ├── vercel.json             # Vercel deployment config
 │
+├── config/                 # Configuration files
+│   ├── config.js           # Azure services config (legacy)
+│   ├── firebase-config.js  # Firebase authentication & database
+│   ├── youtube-config.js   # YouTube API for Watch feature
+│   ├── emailjs-config.js   # EmailJS for friend invitations
+│   ├── web3forms-config.js # Web3Forms (EmailJS alternative)
+│   └── *.local.js          # Local overrides (gitignored)
+│
 ├── pages/                  # HTML pages
+│   ├── account.html        # User account & friends
+│   ├── login.html          # Authentication
 │   ├── review.html         # Daily review flashcards
+│   ├── watch.html          # TikTok-style video feed
 │   ├── books.html          # Book library
 │   ├── reader.html         # Book reader
 │   ├── talk.html           # AI conversation partner
 │   ├── roadmap.html        # HSK level progression
 │   └── complete.html       # Review completion screen
 │
-├── css/                    # Stylesheets
-│   ├── styles.css          # Homepage styles
-│   ├── review.css          # Review page styles
-│   ├── books.css           # Books page styles
-│   ├── reader.css          # Reader page styles
-│   ├── talk.css            # Talk page styles
-│   ├── roadmap.css         # Roadmap page styles
-│   └── complete.css        # Completion page styles
+├── css/                    # Stylesheets (one per page)
+│   ├── styles.css          # Homepage & global styles
+│   ├── account.css         # Account page styles
+│   ├── login.css           # Login page styles
+│   └── ...                 # Other page styles
 │
-├── js/                     # JavaScript files
+├── js/                     # JavaScript modules
 │   ├── script.js           # Homepage logic
-│   ├── review.js           # Review page with SRS algorithm
-│   ├── books.js            # Books library logic
-│   ├── reader.js           # Book reader with dictionary
-│   ├── talk.js             # AI conversation logic
-│   ├── roadmap.js          # HSK progression tracking
-│   └── complete.js         # Completion screen logic
+│   ├── firebase-service.js # Firebase SDK wrapper
+│   ├── user-data.js        # User data manager (localStorage + Firebase)
+│   ├── account.js          # Account & friends logic
+│   └── ...                 # Other page scripts
 │
 ├── assets/                 # Static assets
 │   └── favicon.svg         # Cookie favicon
@@ -166,6 +203,14 @@ BiteLingSite/
 │   └── config.js           # API endpoint for env vars
 │
 └── docs/                   # Documentation
+    ├── setup/              # Setup guides (NEW!)
+    │   ├── README.md       # Setup guide index
+    │   ├── FIREBASE_SETUP.md
+    │   ├── YOUTUBE_SETUP.md
+    │   ├── EMAILJS_QUICK_SETUP.md
+    │   ├── VERCEL_QUICK_SETUP.md
+    │   └── ...             # Other setup guides
+    │
     ├── DEPLOYMENT_SUMMARY.md
     ├── VERCEL_SETUP.md
     ├── GITHUB_SETUP.md

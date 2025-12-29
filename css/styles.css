@@ -299,6 +299,21 @@ body {
     transform: scale(1.1);
 }
 
+.camera-btn {
+    position: relative;
+}
+
+.premium-tag {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFC700 100%);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .top-bar {

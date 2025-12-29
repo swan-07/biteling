@@ -223,10 +223,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Activity buttons
     const activityButtons = document.querySelectorAll('.activity-btn');
-    const activities = ['Books', 'Watch', 'Talk', 'Roadmap'];
+    const activities = ['Books', 'Watch', 'Camera', 'Talk', 'Roadmap'];
     const activityPages = {
         'Books': 'pages/books.html',
         'Watch': 'pages/watch.html',
+        'Camera': 'pages/camera.html',
         'Talk': 'pages/talk.html',
         'Roadmap': 'pages/roadmap.html'
     };

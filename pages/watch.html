@@ -56,8 +56,11 @@
     <!-- Vercel environment variables (auto-generated at build time) -->
     <script src="../env-config.js" onerror="this.remove()"></script>
     <!-- Load template config, then local config overrides it -->
-    <script src="../youtube-config.js"></script>
-    <script src="../youtube-config.local.js" onerror="this.remove()"></script>
-    <script src="../js/watch.js"></script>
+    <script src="../config/youtube-config.js"></script>
+    <script src="../config/youtube-config.local.js" onerror="this.remove()"></script>
+    <!-- Firebase & User Data -->
+    <script src="../config/firebase-config.js"></script>
+    <script src="../config/firebase-config.local.js" onerror="this.remove()"></script>
+    <script type="module" src="../js/watch.js"></script>
 </body>
 </html>

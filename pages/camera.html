@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Translation - BiteLing</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <link rel="stylesheet" href="../css/camera.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <button class="back-btn" onclick="window.location.href='../index.html'">← Back</button>
+            <h1>📷 Live Translation</h1>
+            <div class="premium-badge">👑 BiteLing+</div>
+        </div>
+
+        <!-- Premium Gate (shown if not premium) -->
+        <div class="premium-gate hidden" id="premiumGate">
+            <div class="gate-content">
+                <div class="gate-icon">👑</div>
+                <h2>BiteLing+ Feature</h2>
+                <p>Live camera translation is available exclusively for BiteLing+ members.</p>
+                <p class="gate-features">
+                    With BiteLing+, you get:
+                    <br>📷 Real-time camera translation
+                    <br>👑 Crown icon badge
+                    <br>🍪 100 cookies daily
+                </p>
+                <button class="upgrade-btn" onclick="window.location.href='../index.html#purchase'">
+                    Upgrade to BiteLing+ - $20
+                </button>
+                <button class="back-btn-secondary" onclick="window.location.href='../index.html'">
+                    Back to Home
+                </button>
+            </div>
+        </div>
+
+        <!-- Camera View (shown if premium) -->
+        <div class="camera-container" id="cameraContainer">
+            <!-- Video Feed -->
+            <div class="video-wrapper">
+                <video id="videoFeed" autoplay playsinline></video>
+                <canvas id="overlay" class="overlay-canvas"></canvas>
+
+                <!-- Camera Controls -->
+                <div class="camera-controls">
+                    <button class="control-btn" id="captureBtn" title="Capture & Translate">
+                        <span class="btn-icon">📸</span>
+                    </button>
+                    <button class="control-btn" id="flashlightBtn" title="Toggle Flashlight">
+                        <span class="btn-icon">💡</span>
+                    </button>
+                    <button class="control-btn" id="switchCameraBtn" title="Switch Camera">
+                        <span class="btn-icon">🔄</span>
+                    </button>
+                    <button class="control-btn" id="screenShareBtn" title="Share Screen">
+                        <span class="btn-icon">🖥️</span>
+                    </button>
+                </div>
+
+                <!-- Processing Indicator -->
+                <div class="processing hidden" id="processing">
+                    <div class="spinner"></div>
+                    <p>Translating...</p>
+                </div>
+            </div>
+
+            <!-- Translation Results -->
+            <div class="results-panel" id="resultsPanel">
+                <div class="panel-header">
+                    <h3>Translation</h3>
+                    <button class="clear-btn" id="clearBtn">Clear</button>
+                </div>
+
+                <div class="results-content" id="resultsContent">
+                    <div class="empty-state">
+                        <p class="empty-icon">👆</p>
+                        <p>Point your camera at Chinese text and tap the capture button</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions" id="instructions">
+            <h3>How to Use</h3>
+            <ol>
+                <li>Point your camera at Chinese text (signs, menus, books, etc.)</li>
+                <li>Or tap 🖥️ to share your screen and translate on-screen text</li>
+                <li>Tap the 📸 button to capture and translate</li>
+                <li>Translation will appear overlaid on the camera feed (AR-style!)</li>
+                <li>Tap any word in the results panel to see definition and add to review deck</li>
+                <li>Use 💡 to toggle flashlight in low light</li>
+                <li>Use 🔄 to switch between front/back cameras</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Word Details Modal -->
+    <div class="modal-overlay hidden" id="wordModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeWordModal">✕</button>
+            <div class="word-details" id="wordDetails">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Tesseract.js for OCR - using v5 for better compatibility -->
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+
+    <!-- Firebase & User Data -->
+    <script src="../env-config.js" onerror="this.remove()"></script>
+    <script src="../config/firebase-config.js"></script>
+    <script src="../config/firebase-config.local.js" onerror="this.remove()"></script>
+    <script type="module" src="../js/camera.js"></script>
+</body>
+</html>

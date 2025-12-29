@@ -1,3 +1,6 @@
+// Import user data manager
+import userDataManager from './user-data.js';
+
 // ========================================
 // STATE MANAGEMENT
 // ========================================
@@ -77,6 +80,7 @@ async function fetchYouTubeVideos(hskLevel, pageToken = '') {
     url.searchParams.append('key', config.apiKey);
     url.searchParams.append('order', 'relevance');
     url.searchParams.append('relevanceLanguage', 'zh');
+    url.searchParams.append('videoDefinition', 'any');
 
     if (pageToken) {
         url.searchParams.append('pageToken', pageToken);
@@ -96,14 +100,50 @@ async function fetchYouTubeVideos(hskLevel, pageToken = '') {
             nextPageTokens[hskLevel] = data.nextPageToken;
         }
 
-        // Convert to our video format
-        const videos = data.items.map(item => ({
-            youtubeId: item.id.videoId,
-            title: item.snippet.title
-        }));
+        // Get video IDs to fetch statistics
+        const videoIds = data.items.map(item => item.id.videoId).join(',');
 
-        console.log(`Fetched ${videos.length} videos for HSK ${hskLevel}`);
-        return videos;
+        // Fetch video statistics to filter by view count
+        const statsUrl = new URL('https://www.googleapis.com/youtube/v3/videos');
+        statsUrl.searchParams.append('part', 'statistics');
+        statsUrl.searchParams.append('id', videoIds);
+        statsUrl.searchParams.append('key', config.apiKey);
+
+        try {
+            const statsResponse = await fetch(statsUrl);
+            const statsData = await statsResponse.json();
+
+            // Create a map of video ID to view count
+            const viewCounts = {};
+            statsData.items.forEach(item => {
+                viewCounts[item.id] = parseInt(item.statistics.viewCount || 0);
+            });
+
+            // Convert to our video format and filter by 100k+ views
+            const videos = data.items
+                .filter(item => {
+                    const views = viewCounts[item.id.videoId] || 0;
+                    return views >= 100000; // 100k minimum views
+                })
+                .map(item => ({
+                    youtubeId: item.id.videoId,
+                    title: item.snippet.title
+                }));
+
+            console.log(`Fetched ${videos.length} videos for HSK ${hskLevel} (filtered to 100k+ views)`);
+            return videos;
+        } catch (statsError) {
+            console.warn('Failed to fetch video statistics, returning unfiltered results:', statsError);
+
+            // Fallback: return videos without filtering
+            const videos = data.items.map(item => ({
+                youtubeId: item.id.videoId,
+                title: item.snippet.title
+            }));
+
+            console.log(`Fetched ${videos.length} videos for HSK ${hskLevel}`);
+            return videos;
+        }
 
     } catch (error) {
         console.error('Error fetching YouTube videos:', error);
@@ -170,7 +210,7 @@ window.onYouTubeIframeAPIReady = function() {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    loadUserData();
+    await loadUserData();
     determineHSKLevel();
 
     // Load videos for current level
@@ -181,17 +221,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateCookiesDisplay();
 });
 
-function loadUserData() {
+async function loadUserData() {
+    // Initialize user data manager
+    await userDataManager.init();
+
+    // Get cookies from userDataManager (Firebase-first)
+    const cookies = userDataManager.getCookies();
+
+    // Load old bitelingData for other fields
     const saved = localStorage.getItem('bitelingData');
     if (saved) {
         userData = JSON.parse(saved);
     } else {
         userData = {
-            cookies: 100,
+            cookies: 0,
             cards: [],
             watchProgress: {}
         };
     }
+
+    // Override cookies with userDataManager value
+    userData.cookies = cookies;
 }
 
 function saveUserData() {
@@ -518,14 +568,15 @@ function handleSwipe() {
     }
 }
 
-function nextVideo() {
+async function nextVideo() {
     // Check if user has enough cookies
     if (userData.cookies < 5) {
         showCookieWarning();
         return;
     }
 
-    // Deduct cookies
+    // Deduct cookies using userDataManager
+    await userDataManager.subtractCookies(5);
     userData.cookies -= 5;
     saveUserData();
     updateCookiesDisplay();

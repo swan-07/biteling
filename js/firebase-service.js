@@ -330,8 +330,39 @@ class FirebaseService {
 
     // Send invitation email
     async sendInvitationEmail(toEmail, fromEmail) {
+        // Try EmailJS first for automatic sending
+        const emailjsConfig = window.EMAILJS_CONFIG;
+
+        if (emailjsConfig && emailjsConfig.publicKey !== 'YOUR_PUBLIC_KEY' && window.emailjs) {
+            try {
+                // Initialize EmailJS if not already done
+                if (!window.emailjs._initialized) {
+                    window.emailjs.init(emailjsConfig.publicKey);
+                    window.emailjs._initialized = true;
+                }
+
+                // Send email using EmailJS
+                await window.emailjs.send(
+                    emailjsConfig.serviceId,
+                    emailjsConfig.templateId,
+                    {
+                        to_email: toEmail,
+                        from_email: fromEmail,
+                        app_url: 'https://biteling.vercel.app/',
+                        message: `${fromEmail} is adding you as a friend on BiteLing, the best and easiest way to learn Mandarin!\n\nJoin now to connect with your friend and start learning Chinese together!`
+                    }
+                );
+
+                console.log(`✅ Invitation email automatically sent to ${toEmail}`);
+                return true;
+            } catch (emailjsError) {
+                console.warn('EmailJS failed, falling back to mailto:', emailjsError);
+                // Fall through to mailto fallback
+            }
+        }
+
+        // Fallback to mailto link if EmailJS not configured or failed
         try {
-            // Create a mailto link that opens the user's email client
             const subject = encodeURIComponent(`${fromEmail} invited you to BiteLing!`);
             const body = encodeURIComponent(
                 `${fromEmail} is adding you as a friend on BiteLing, the best and easiest way to learn Mandarin!\n\n` +
@@ -344,7 +375,7 @@ class FirebaseService {
             const mailtoLink = `mailto:${toEmail}?subject=${subject}&body=${body}`;
             window.open(mailtoLink, '_blank');
 
-            console.log(`Invitation email prepared for ${toEmail}`);
+            console.log(`📧 Invitation email prepared for ${toEmail} (manual send required)`);
             return true;
         } catch (error) {
             console.error('Error preparing invitation email:', error);

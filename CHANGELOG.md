@@ -4,6 +4,18 @@ All notable changes to BiteLing will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed - 2025-12-31
+
+#### Vercel Deployment
+- **Fixed "Firebase not initialized" error on Vercel**
+- Added `buildCommand` to `vercel.json` to run `vercel-build.sh`
+- Build script now properly injects Firebase environment variables at build time
+- Created comprehensive Firebase setup guide: `FIREBASE_VERCEL_FIX.md`
+- Updated `docs/VERCEL_SETUP.md` with detailed Firebase configuration steps
+
+#### UI Improvements
+- **Removed "-5 🍪" cost indicator** from Watch page scroll indicator (videos are free)
+
 ### Added - 2025-12-31
 
 #### Account - Profile Icon Shop

@@ -30,12 +30,46 @@
         <div class="mode-selector">
             <button class="mode-btn active" data-mode="chat" title="Text chat with optional voice input and audio">
                 <span class="mode-icon">💬</span>
-                <span class="mode-label">Chat</span>
+                <span class="mode-label">Chat with AI</span>
             </button>
             <button class="mode-btn" data-mode="call" title="Audio-only conversation mode">
                 <span class="mode-icon">📞</span>
-                <span class="mode-label">Call</span>
+                <span class="mode-label">Call AI</span>
             </button>
+            <button class="mode-btn" data-mode="partner" title="Match with a real user">
+                <span class="mode-icon">👥</span>
+                <span class="mode-label">Find Partner</span>
+            </button>
+        </div>
+
+        <!-- Partner Matching Container -->
+        <div class="partner-matching-container hidden" id="partnerMatchingContainer">
+            <div class="matching-card">
+                <div class="matching-icon" id="matchingIcon">🔍</div>
+                <h2 id="matchingTitle">Find a Conversation Partner</h2>
+                <p id="matchingMessage">Match with another user at your level for real conversation practice!</p>
+
+                <div class="matching-filters">
+                    <label>
+                        <input type="checkbox" id="matchText" checked>
+                        Text Chat
+                    </label>
+                    <label>
+                        <input type="checkbox" id="matchVoice">
+                        Voice Call
+                    </label>
+                </div>
+
+                <button class="match-button" id="findMatchButton">
+                    <span class="match-btn-text">Find Partner</span>
+                </button>
+
+                <div class="matching-status hidden" id="matchingStatus">
+                    <div class="spinner"></div>
+                    <p>Searching for a partner at HSK level <span id="matchHSKLevel">1</span>...</p>
+                    <button class="cancel-match-btn" id="cancelMatchButton">Cancel</button>
+                </div>
+            </div>
         </div>
 
         <!-- Chat Container -->

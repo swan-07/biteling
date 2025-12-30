@@ -1,0 +1,82 @@
+# BiteLing File Organization Summary
+
+## Root Level
+- index.html - Homepage
+- README.md - Project documentation
+- CHANGELOG.md - Version history
+- vercel.json - Deployment config
+- sw-notification.js - Notification service worker
+
+## Main Directories
+
+/pages/ - All HTML pages (10 files)
+  - Core: account.html, login.html, review.html
+  - Learning: books.html, reader.html, camera.html, talk.html, watch.html
+  - Info: roadmap.html, complete.html
+
+/js/ - JavaScript modules (14 files)
+  - Core: script.js, user-data.js, firebase-service.js
+  - Features: notifications.js, camera.js, review.js, etc.
+  - One JS file per page + shared utilities
+
+/css/ - Stylesheets (11 files)
+  - styles.css (homepage) + one CSS file per page
+  - Consistent design system across all files
+
+/config/ - API configurations (8 files)
+  - firebase-config.js + .local.js
+  - youtube-config.js + .local.js
+  - emailjs-config.js, web3forms-config.js
+  - *.local.js files are gitignored
+
+/assets/ - Static files
+  - favicon.svg - Cookie icon
+  - Images, fonts, etc.
+
+/docs/ - Documentation
+  - PROJECT_STRUCTURE.md - Comprehensive guide
+  - test-notification.html - Testing tool
+  - /setup/ - Configuration guides
+
+/api/ - Serverless functions
+  - config.js - Vercel API endpoint
+
+## Key Features by File
+
+Camera Translation (camera.html, camera.js, camera.css):
+  - AR overlay translation
+  - OCR with Tesseract.js
+  - MyMemory API integration
+  - Image preprocessing
+
+Notifications (notifications.js, sw-notification.js):
+  - Daily reminders
+  - Visual banners
+  - Audio alerts
+  - Test functionality
+
+Review System (review.html, review.js, review.css):
+  - Spaced repetition
+  - Card management
+  - Streak tracking
+
+Social Features (account.html, account.js, account.css):
+  - Friends system
+  - Cookie gifting
+  - Notification settings
+
+## Recent Changes (2025-12-30)
+✅ Camera translation enhanced with iPhone-style AR
+✅ MyMemory API integration for better translations
+✅ Daily notification system added
+✅ In-page visual notification banners
+✅ Service Worker for background notifications
+✅ Project documentation organized
+
+## Quick Navigation
+
+Homepage → index.html
+Account Settings → pages/account.html
+Camera Translation → pages/camera.html
+Review Cards → pages/review.html
+Documentation → docs/PROJECT_STRUCTURE.md

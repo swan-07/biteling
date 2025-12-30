@@ -569,19 +569,7 @@ function handleSwipe() {
 }
 
 async function nextVideo() {
-    // Check if user has enough cookies
-    if (userData.cookies < 5) {
-        showCookieWarning();
-        return;
-    }
-
-    // Deduct cookies using userDataManager
-    await userDataManager.subtractCookies(5);
-    userData.cookies -= 5;
-    saveUserData();
-    updateCookiesDisplay();
-
-    // Move to next video
+    // Move to next video (no longer costs cookies!)
     const videos = videoCache[userHSKLevel] || [];
     currentVideoIndex++;
 

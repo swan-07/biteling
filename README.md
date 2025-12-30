@@ -6,11 +6,12 @@ A gamified Chinese language learning platform with Anki-style spaced repetition 
 
 - 📚 **Daily Review**: Spaced repetition flashcards with mastery tracking
 - 📖 **Books**: Read Chinese stories with interactive dictionary
-- 📷 **Camera** (BiteLing+ only): Live camera translation of Chinese text
+- 📷 **Camera** (BiteLing+ only): iPhone-style AR translation with OCR & phrase translation
 - 💬 **Talk**: AI conversation partner for speaking practice
 - 🎬 **Watch**: TikTok-style video feed with HSK-adaptive content
 - 🗺️ **Roadmap**: HSK level progression (1-6)
 - 🍪 **Cookie Economy**: Earn cookies through learning activities
+- 🔔 **Daily Notifications**: Customizable reminders for your daily Bites
 
 ## Quick Start
 
@@ -233,15 +234,44 @@ BiteLingSite/
 - Chapter-by-chapter reading
 - Text-to-speech (Azure TTS)
 
+### Camera ([pages/camera.html](pages/camera.html)) - BiteLing+ Feature
+- **iPhone Live Text inspired AR translation**
+- Real-time OCR with Tesseract.js v5
+- Phrase-level translation using MyMemory API
+- 100,000+ word CC-CEDICT dictionary for Pinyin
+- Image preprocessing for better accuracy
+- AR-style positioned overlays at exact text locations
+- Screen capture mode for translating any content
+- Flashlight toggle for low-light conditions
+
+### Account ([pages/account.html](pages/account.html))
+- User statistics (level, streak, words learned)
+- **Daily notification settings** - Set custom reminder times
+- **Test notification button** - Verify notifications work
+- **Profile Icon Shop** - Customize your profile with purchasable icons
+  - 15 unique icons to unlock (food, animals, special items)
+  - Tiered pricing from 50-300 cookies
+  - All users start with free cookie 🍪 icon
+  - Switch between owned icons anytime
+- Friends system with cookie gifting
+- Send up to 10 cookies per friend per day
+
 ### Talk ([pages/talk.html](pages/talk.html))
-- **Two conversation modes:**
-  - 💬 **Chat Mode**: Text/voice input, optional auto-play TTS, manual audio playback
-  - 📞 **Call Mode**: Continuous audio conversation like a phone call
+- **Three conversation modes:**
+  - 💬 **Chat Mode**: Text/voice input with AI partner, optional auto-play TTS, manual audio playback
+  - 📞 **Call Mode**: Continuous audio conversation with AI like a phone call
+  - 👥 **Find Partner Mode**: Match with real users for peer-to-peer conversation practice
+- **Peer-to-peer matching features:**
+  - HSK level-based matchmaking (pairs users at similar levels)
+  - Choose text chat or voice call preferences
+  - Real-time messaging with matched partners
+  - "No match found" handling after 30-second timeout
+  - Cancel search anytime
 - AI adjusts language complexity based on your HSK level (1-5)
 - Voice input (Web Speech API for Chinese)
 - Text-to-speech with Azure Speech Services
 - Earn 5 cookies per 5 messages
-- Powered by Azure OpenAI GPT
+- Powered by Azure OpenAI GPT and Firebase Firestore
 
 ### Watch ([pages/watch.html](pages/watch.html))
 - **TikTok-style video learning feed**
@@ -252,7 +282,7 @@ BiteLingSite/
   - Tap words to add to SRS deck
   - Playback speed control (0.5x - 1.5x)
   - Replay videos
-- **Swipe up for next video** (costs 5 🍪)
+- **Swipe up for next video** (unlimited, free!)
 - Track progress per HSK level
 - Learn naturally through comprehensible input
 
@@ -263,10 +293,17 @@ BiteLingSite/
 
 ## Cookie Economy
 
+**Earning Cookies:**
 - Daily Review: Earn 1 cookie per card (only "Good" rating)
 - Talk: Earn 5 cookies per 5 messages
-- Watch: Spend 5 cookies per video
-- Books: Spend cookies to unlock books
+
+**Free Content:**
+- Watch: Free unlimited videos
+- Books: Free unlimited access to all books
+
+**Spending Cookies:**
+- Profile Icons: 50-300 cookies for custom icons
+- Friends: Send cookies to friends (social feature, up to 10/day per friend)
 
 ## Technologies Used
 

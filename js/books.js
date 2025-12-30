@@ -166,7 +166,6 @@ function renderStoreBooks() {
 
     bookCatalog.forEach(book => {
         const isPurchased = purchasedBooks.includes(book.id);
-        const canAfford = userData.cookies >= book.price;
 
         const bookCard = document.createElement('div');
         bookCard.className = 'book-card';
@@ -182,13 +181,12 @@ function renderStoreBooks() {
             </div>
             <div class="book-footer">
                 ${isPurchased
-                    ? '<span class="purchased-badge">✓ Purchased</span>'
-                    : `<div class="book-price"><span>🍪</span><span>${book.price}</span></div>`
+                    ? '<span class="purchased-badge">✓ In Library</span>'
+                    : '<span class="free-badge">📚 Free</span>'
                 }
                 <button class="buy-btn ${isPurchased ? 'read-btn' : ''}"
-                        ${isPurchased ? '' : (canAfford ? '' : 'disabled')}
                         onclick="${isPurchased ? `readBook('${book.id}')` : `buyBook('${book.id}')`}">
-                    ${isPurchased ? 'Read' : 'Buy'}
+                    ${isPurchased ? 'Read' : 'Add to Library'}
                 </button>
             </div>
         `;
@@ -236,27 +234,16 @@ function renderLibraryBooks() {
     });
 }
 
-// Buy book
+// Buy book (now free - just adds to library)
 async function buyBook(bookId) {
     const book = bookCatalog.find(b => b.id === bookId);
     if (!book) return;
 
-    // Check if user has enough cookies
-    if (userData.cookies < book.price) {
-        showPurchaseModal('error', book);
-        return;
-    }
-
-    // Deduct cookies using userDataManager
-    await userDataManager.subtractCookies(book.price);
-    userData.cookies -= book.price;
-
-    // Add to purchased books
+    // Add to purchased books (no longer costs cookies!)
     purchasedBooks.push(bookId);
     savePurchasedBooks();
 
     // Update display
-    document.getElementById('cookieCount').textContent = userData.cookies;
     renderStoreBooks();
     renderLibraryBooks();
 
@@ -274,8 +261,8 @@ function showPurchaseModal(type, book) {
 
     if (type === 'success') {
         modalIcon.textContent = '📚';
-        modalTitle.textContent = 'Purchase Successful!';
-        modalMessage.innerHTML = `You bought <strong>"${book.title}"</strong> for <strong>${book.price} cookies</strong>.<br><br>Check your library to start reading!`;
+        modalTitle.textContent = 'Added to Library!';
+        modalMessage.innerHTML = `<strong>"${book.title}"</strong> has been added to your library.<br><br>Start reading now!`;
         modalButton.textContent = 'Go to Library';
         modalButton.onclick = () => {
             closePurchaseModal();
@@ -285,12 +272,6 @@ function showPurchaseModal(type, book) {
             document.querySelector('[data-tab="library"]').classList.add('active');
             document.getElementById('library').classList.add('active');
         };
-    } else {
-        modalIcon.textContent = '🍪';
-        modalTitle.textContent = 'Not Enough Cookies!';
-        modalMessage.innerHTML = `You need <strong>${book.price} cookies</strong> but only have <strong>${userData.cookies} cookies</strong>.<br><br>Complete more reviews to earn cookies!`;
-        modalButton.textContent = 'Got it';
-        modalButton.onclick = closePurchaseModal;
     }
 
     modal.classList.add('show');

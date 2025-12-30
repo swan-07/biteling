@@ -2,27 +2,35 @@
 import userDataManager from './user-data.js';
 import notificationManager from './notifications.js';
 
+// Icon shop catalog
+const iconShop = [
+    { id: 'default', icon: '🍪', name: 'Cookie', price: 0, owned: true }, // Free starter icon
+    { id: 'pizza', icon: '🍕', name: 'Pizza', price: 50, owned: false },
+    { id: 'burger', icon: '🍔', name: 'Burger', price: 50, owned: false },
+    { id: 'sushi', icon: '🍣', name: 'Sushi', price: 50, owned: false },
+    { id: 'taco', icon: '🌮', name: 'Taco', price: 50, owned: false },
+    { id: 'ramen', icon: '🍜', name: 'Ramen', price: 50, owned: false },
+    { id: 'cake', icon: '🎂', name: 'Cake', price: 100, owned: false },
+    { id: 'donut', icon: '🍩', name: 'Donut', price: 100, owned: false },
+    { id: 'icecream', icon: '🍦', name: 'Ice Cream', price: 100, owned: false },
+    { id: 'panda', icon: '🐼', name: 'Panda', price: 150, owned: false },
+    { id: 'dragon', icon: '🐉', name: 'Dragon', price: 200, owned: false },
+    { id: 'robot', icon: '🤖', name: 'Robot', price: 200, owned: false },
+    { id: 'unicorn', icon: '🦄', name: 'Unicorn', price: 250, owned: false },
+    { id: 'crown', icon: '👑', name: 'Crown', price: 300, owned: false },
+    { id: 'star', icon: '⭐', name: 'Star', price: 300, owned: false }
+];
+
 // Generate consistent food emoji (same as in script.js)
 function getFoodEmojiForUser(email) {
-    const foodEmojis = [
-        '🍕', '🍔', '🍟', '🌭', '🍿', '🧀', '🥓', '🥚', '🍳',
-        '🥐', '🥯', '🍞', '🥖', '🥨', '🧇', '🥞', '🧈', '🍖',
-        '🍗', '🥩', '🍤', '🍣', '🍱', '🥟', '🍜', '🍲', '🍛',
-        '🍝', '🥘', '🥗', '🥙', '🌮', '🌯', '🫔', '🥪', '🍕',
-        '🍰', '🎂', '🧁', '🍮', '🍩', '🍪', '🍫', '🍬', '🍭',
-        '🍡', '🍧', '🍨', '🍦', '🥧', '🧋', '🍵', '☕', '🥤',
-        '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍒', '🍑',
-        '🥝', '🍍', '🥭', '🥥', '🍅', '🥑', '🫒', '🥕', '🌽'
-    ];
-
-    let hash = 0;
-    for (let i = 0; i < email.length; i++) {
-        hash = ((hash << 5) - hash) + email.charCodeAt(i);
-        hash = hash & hash;
+    // Check if user has a custom icon selected
+    const customIcon = localStorage.getItem('userProfileIcon');
+    if (customIcon) {
+        return customIcon;
     }
 
-    const index = Math.abs(hash) % foodEmojis.length;
-    return foodEmojis[index];
+    // Default to cookie emoji for all new users
+    return '🍪';
 }
 
 // Calculate words learned (cards that have been reviewed)
@@ -215,6 +223,101 @@ async function addFriend(email) {
     return result;
 }
 
+// Load icon shop
+function loadIconShop() {
+    const iconShopGrid = document.getElementById('iconShopGrid');
+    const ownedIcons = JSON.parse(localStorage.getItem('ownedIcons') || '["default"]');
+    const currentIcon = localStorage.getItem('userProfileIcon') || '🍪';
+    const cookies = userDataManager.getCookies();
+
+    iconShopGrid.innerHTML = '';
+
+    iconShop.forEach(item => {
+        const owned = ownedIcons.includes(item.id);
+        const isEquipped = item.icon === currentIcon;
+        const canAfford = cookies >= item.price;
+
+        const iconCard = document.createElement('div');
+        iconCard.className = `icon-shop-item ${isEquipped ? 'equipped' : ''}`;
+
+        let buttonHtml = '';
+        if (isEquipped) {
+            buttonHtml = '<button class="icon-btn equipped-btn">Equipped</button>';
+        } else if (owned) {
+            buttonHtml = `<button class="icon-btn equip-btn" onclick="equipIcon('${item.id}', '${item.icon}')">Equip</button>`;
+        } else {
+            buttonHtml = `<button class="icon-btn buy-icon-btn ${!canAfford ? 'disabled' : ''}"
+                onclick="buyIcon('${item.id}', '${item.icon}', ${item.price})"
+                ${!canAfford ? 'disabled' : ''}>
+                Buy - ${item.price} 🍪
+            </button>`;
+        }
+
+        iconCard.innerHTML = `
+            <div class="icon-preview">${item.icon}</div>
+            <div class="icon-name">${item.name}</div>
+            ${buttonHtml}
+        `;
+
+        iconShopGrid.appendChild(iconCard);
+    });
+}
+
+// Buy icon
+async function buyIcon(iconId, iconEmoji, price) {
+    const cookies = userDataManager.getCookies();
+
+    if (cookies < price) {
+        alert('Not enough cookies!');
+        return;
+    }
+
+    // Deduct cookies
+    await userDataManager.subtractCookies(price);
+
+    // Add to owned icons
+    const ownedIcons = JSON.parse(localStorage.getItem('ownedIcons') || '["default"]');
+    if (!ownedIcons.includes(iconId)) {
+        ownedIcons.push(iconId);
+        localStorage.setItem('ownedIcons', JSON.stringify(ownedIcons));
+    }
+
+    // Auto-equip new icon
+    localStorage.setItem('userProfileIcon', iconEmoji);
+
+    // Update UI
+    document.getElementById('userIconLarge').textContent = iconEmoji;
+    await loadAccountData();
+    loadIconShop();
+
+    // Show success message
+    const successMsg = document.createElement('div');
+    successMsg.className = 'success-toast';
+    successMsg.textContent = `${iconEmoji} purchased and equipped!`;
+    document.body.appendChild(successMsg);
+    setTimeout(() => successMsg.remove(), 3000);
+}
+
+// Equip icon
+function equipIcon(iconId, iconEmoji) {
+    localStorage.setItem('userProfileIcon', iconEmoji);
+
+    // Update UI
+    document.getElementById('userIconLarge').textContent = iconEmoji;
+    loadIconShop();
+
+    // Show success message
+    const successMsg = document.createElement('div');
+    successMsg.className = 'success-toast';
+    successMsg.textContent = `${iconEmoji} equipped!`;
+    document.body.appendChild(successMsg);
+    setTimeout(() => successMsg.remove(), 3000);
+}
+
+// Expose functions to window for onclick handlers
+window.buyIcon = buyIcon;
+window.equipIcon = equipIcon;
+
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
     // Set icon immediately from localStorage (no delay)
@@ -222,6 +325,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadAccountData();
     await loadFriends();
+    loadIconShop();
 
     // Initialize notification system
     await notificationManager.init();

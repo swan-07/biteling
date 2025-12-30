@@ -18,7 +18,7 @@ const AZURE_CONFIG = {
 // STATE MANAGEMENT
 // ========================================
 
-let currentMode = 'chat'; // 'chat', 'call'
+let currentMode = 'chat'; // 'chat', 'call', 'partner'
 let conversationHistory = [];
 let cookiesEarned = 0;
 let messageCount = 0;
@@ -34,9 +34,36 @@ let callActive = false;
 let callStartTime = null;
 let callTimerInterval = null;
 
+// Partner mode state
+let isSearchingForMatch = false;
+let matchListener = null;
+let currentMatch = null;
+let matchConversationListener = null;
+
 // ========================================
 // INITIALIZATION
 // ========================================
+
+// Import Firebase modules
+import {
+    getFirestore,
+    collection,
+    doc,
+    setDoc,
+    getDoc,
+    getDocs,
+    deleteDoc,
+    query,
+    where,
+    onSnapshot,
+    addDoc,
+    orderBy,
+    limit,
+    serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import firebaseService from './firebase-service.js';
+
+let db = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     await loadConfig();
@@ -44,6 +71,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
     setupSpeechRecognition();
     initializeSpeechSynthesis();
+
+    // Initialize Firebase for matchmaking
+    firebaseService.init();
+    db = firebaseService.db;
 
     // Add initial AI greeting to history
     conversationHistory.push({
@@ -106,6 +137,17 @@ function setupEventListeners() {
 
     startCallButton.addEventListener('click', startCall);
     endCallButton.addEventListener('click', endCall);
+
+    // Partner mode controls
+    const findMatchButton = document.getElementById('findMatchButton');
+    const cancelMatchButton = document.getElementById('cancelMatchButton');
+
+    if (findMatchButton) {
+        findMatchButton.addEventListener('click', startMatchmaking);
+    }
+    if (cancelMatchButton) {
+        cancelMatchButton.addEventListener('click', cancelMatchmaking);
+    }
 }
 
 // ========================================
@@ -123,13 +165,24 @@ function switchMode(mode) {
     // Show/hide containers
     const chatContainer = document.getElementById('chatContainer');
     const callScreen = document.getElementById('callScreen');
+    const partnerContainer = document.getElementById('partnerMatchingContainer');
 
     if (mode === 'call') {
         chatContainer.classList.add('hidden');
         callScreen.classList.remove('hidden');
+        if (partnerContainer) partnerContainer.classList.add('hidden');
+    } else if (mode === 'partner') {
+        chatContainer.classList.add('hidden');
+        callScreen.classList.add('hidden');
+        if (partnerContainer) {
+            partnerContainer.classList.remove('hidden');
+            // Update HSK level display
+            document.getElementById('matchHSKLevel').textContent = userHSKLevel;
+        }
     } else {
         chatContainer.classList.remove('hidden');
         callScreen.classList.add('hidden');
+        if (partnerContainer) partnerContainer.classList.add('hidden');
     }
 }
 
@@ -338,6 +391,12 @@ async function sendMessage() {
 }
 
 async function sendMessageText(message) {
+    // If matched with a partner, send to partner instead of AI
+    if (currentMatch) {
+        await sendPartnerMessage(message);
+        return;
+    }
+
     // Add user message to chat
     addUserMessage(message);
 
@@ -656,4 +715,323 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// ========================================
+// PARTNER MATCHING SYSTEM
+// ========================================
+
+async function startMatchmaking() {
+    // Check if Firebase is initialized
+    if (!db || !firebaseService.isSignedIn()) {
+        alert('Please sign in to match with other users.');
+        return;
+    }
+
+    // Get match preferences
+    const wantsText = document.getElementById('matchText')?.checked || false;
+    const wantsVoice = document.getElementById('matchVoice')?.checked || false;
+
+    if (!wantsText && !wantsVoice) {
+        alert('Please select at least one conversation type (Text Chat or Voice Call).');
+        return;
+    }
+
+    isSearchingForMatch = true;
+
+    // Show searching status
+    document.getElementById('findMatchButton').classList.add('hidden');
+    document.getElementById('matchingStatus').classList.remove('hidden');
+    document.getElementById('matchingIcon').textContent = '🔍';
+    document.getElementById('matchingTitle').textContent = 'Searching for Partner...';
+
+    try {
+        const currentUser = firebaseService.getCurrentUser();
+
+        // Create matchmaking entry
+        const matchData = {
+            userId: currentUser.uid,
+            userEmail: currentUser.email,
+            displayName: currentUser.displayName || 'User',
+            hskLevel: userHSKLevel,
+            wantsText: wantsText,
+            wantsVoice: wantsVoice,
+            timestamp: serverTimestamp(),
+            matched: false
+        };
+
+        // Add to matchmaking queue
+        const matchQueueRef = collection(db, 'matchmaking');
+        const matchDocRef = await addDoc(matchQueueRef, matchData);
+
+        console.log('Added to matchmaking queue:', matchDocRef.id);
+
+        // Look for existing matches
+        await findExistingMatch(matchDocRef.id, matchData);
+
+        // Listen for incoming matches
+        startMatchListener(matchDocRef.id);
+
+        // Set timeout for "no match found"
+        setTimeout(() => {
+            if (isSearchingForMatch && !currentMatch) {
+                showNoMatchFound();
+            }
+        }, 30000); // 30 seconds timeout
+
+    } catch (error) {
+        console.error('Error starting matchmaking:', error);
+        alert('Failed to start matchmaking. Please try again.');
+        resetMatchmakingUI();
+    }
+}
+
+async function findExistingMatch(myMatchId, myMatchData) {
+    try {
+        // Query for waiting users at same HSK level
+        const matchQueueRef = collection(db, 'matchmaking');
+        const q = query(
+            matchQueueRef,
+            where('hskLevel', '==', userHSKLevel),
+            where('matched', '==', false)
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        for (const docSnapshot of querySnapshot.docs) {
+            const otherMatch = docSnapshot.data();
+            const otherMatchId = docSnapshot.id;
+
+            // Skip own match entry
+            if (otherMatchId === myMatchId) continue;
+
+            // Skip if user is matching with themselves
+            if (otherMatch.userId === myMatchData.userId) continue;
+
+            // Check if preferences are compatible
+            const hasCompatiblePreference =
+                (myMatchData.wantsText && otherMatch.wantsText) ||
+                (myMatchData.wantsVoice && otherMatch.wantsVoice);
+
+            if (hasCompatiblePreference) {
+                // Found a match!
+                await createMatch(myMatchId, otherMatchId, myMatchData, otherMatch);
+                return true;
+            }
+        }
+
+        return false; // No match found
+    } catch (error) {
+        console.error('Error finding match:', error);
+        return false;
+    }
+}
+
+async function createMatch(myMatchId, otherMatchId, myMatchData, otherMatchData) {
+    try {
+        // Determine conversation type
+        const conversationType = (myMatchData.wantsText && otherMatchData.wantsText) ? 'text' : 'voice';
+
+        // Create conversation room
+        const conversationRef = collection(db, 'conversations');
+        const conversationDoc = await addDoc(conversationRef, {
+            users: [myMatchData.userId, otherMatchData.userId],
+            userEmails: [myMatchData.userEmail, otherMatchData.userEmail],
+            displayNames: [myMatchData.displayName, otherMatchData.displayName],
+            hskLevel: userHSKLevel,
+            type: conversationType,
+            createdAt: serverTimestamp(),
+            active: true
+        });
+
+        // Mark both matchmaking entries as matched
+        await setDoc(doc(db, 'matchmaking', myMatchId), { matched: true }, { merge: true });
+        await setDoc(doc(db, 'matchmaking', otherMatchId), { matched: true }, { merge: true });
+
+        // Store match info
+        currentMatch = {
+            conversationId: conversationDoc.id,
+            partnerId: otherMatchData.userId,
+            partnerEmail: otherMatchData.userEmail,
+            partnerName: otherMatchData.displayName,
+            type: conversationType
+        };
+
+        // Show match found
+        showMatchFound(otherMatchData.displayName, conversationType);
+
+        // Start conversation listener
+        startConversationListener(conversationDoc.id);
+
+    } catch (error) {
+        console.error('Error creating match:', error);
+        alert('Failed to create match. Please try again.');
+        resetMatchmakingUI();
+    }
+}
+
+function startMatchListener(myMatchId) {
+    // Listen for updates to our matchmaking entry
+    const matchDocRef = doc(db, 'matchmaking', myMatchId);
+
+    matchListener = onSnapshot(matchDocRef, async (docSnapshot) => {
+        const data = docSnapshot.data();
+
+        if (data && data.matched && !currentMatch) {
+            // We got matched by someone else!
+            // Find the conversation we're part of
+            const conversationsRef = collection(db, 'conversations');
+            const q = query(
+                conversationsRef,
+                where('users', 'array-contains', firebaseService.getCurrentUser().uid),
+                where('active', '==', true)
+            );
+
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                const conversationDoc = querySnapshot.docs[0];
+                const conversationData = conversationDoc.data();
+
+                // Find partner info
+                const currentUserId = firebaseService.getCurrentUser().uid;
+                const partnerIndex = conversationData.users.findIndex(id => id !== currentUserId);
+
+                if (partnerIndex !== -1) {
+                    currentMatch = {
+                        conversationId: conversationDoc.id,
+                        partnerId: conversationData.users[partnerIndex],
+                        partnerEmail: conversationData.userEmails[partnerIndex],
+                        partnerName: conversationData.displayNames[partnerIndex],
+                        type: conversationData.type
+                    };
+
+                    showMatchFound(currentMatch.partnerName, currentMatch.type);
+                    startConversationListener(conversationDoc.id);
+                }
+            }
+        }
+    });
+}
+
+function startConversationListener(conversationId) {
+    // Listen for new messages in the conversation
+    const messagesRef = collection(db, `conversations/${conversationId}/messages`);
+    const q = query(messagesRef, orderBy('timestamp', 'asc'));
+
+    matchConversationListener = onSnapshot(q, (snapshot) => {
+        snapshot.docChanges().forEach(change => {
+            if (change.type === 'added') {
+                const messageData = change.doc.data();
+                const currentUserId = firebaseService.getCurrentUser().uid;
+
+                // Only display messages from partner
+                if (messageData.userId !== currentUserId) {
+                    displayPartnerMessage(messageData.text);
+                }
+            }
+        });
+    });
+}
+
+async function sendPartnerMessage(text) {
+    if (!currentMatch) return;
+
+    try {
+        const messagesRef = collection(db, `conversations/${currentMatch.conversationId}/messages`);
+        await addDoc(messagesRef, {
+            userId: firebaseService.getCurrentUser().uid,
+            text: text,
+            timestamp: serverTimestamp()
+        });
+
+        // Display own message
+        addUserMessage(text);
+    } catch (error) {
+        console.error('Error sending partner message:', error);
+        alert('Failed to send message. Please check your connection.');
+    }
+}
+
+function displayPartnerMessage(text) {
+    const messagesContainer = document.getElementById('chatMessages');
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message ai-message';
+
+    messageDiv.innerHTML = `
+        <div class="message-bubble">
+            <div class="message-chinese">${escapeHtml(text)}</div>
+            <div class="message-english" style="font-size: 0.85em; opacity: 0.7;">From ${escapeHtml(currentMatch.partnerName)}</div>
+        </div>
+    `;
+
+    messagesContainer.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+function showMatchFound(partnerName, conversationType) {
+    isSearchingForMatch = false;
+
+    document.getElementById('matchingIcon').textContent = '✅';
+    document.getElementById('matchingTitle').textContent = 'Match Found!';
+    document.getElementById('matchingMessage').textContent = `Connected with ${partnerName} for ${conversationType} conversation.`;
+    document.getElementById('matchingStatus').classList.add('hidden');
+
+    // Switch to chat mode to start conversation
+    setTimeout(() => {
+        switchMode('chat');
+        alert(`You're now connected with ${partnerName}! Start chatting in Chinese.`);
+    }, 2000);
+}
+
+function showNoMatchFound() {
+    isSearchingForMatch = false;
+
+    document.getElementById('matchingIcon').textContent = '😔';
+    document.getElementById('matchingTitle').textContent = 'No Match Found';
+    document.getElementById('matchingMessage').textContent = 'No users at your level are currently available. Please try again later!';
+    document.getElementById('matchingStatus').classList.add('hidden');
+
+    setTimeout(() => {
+        resetMatchmakingUI();
+    }, 3000);
+}
+
+async function cancelMatchmaking() {
+    isSearchingForMatch = false;
+
+    // Stop listener
+    if (matchListener) {
+        matchListener();
+        matchListener = null;
+    }
+
+    // Remove from matchmaking queue
+    try {
+        const currentUser = firebaseService.getCurrentUser();
+        const matchQueueRef = collection(db, 'matchmaking');
+        const q = query(
+            matchQueueRef,
+            where('userId', '==', currentUser.uid),
+            where('matched', '==', false)
+        );
+
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach(async (docSnapshot) => {
+            await deleteDoc(doc(db, 'matchmaking', docSnapshot.id));
+        });
+    } catch (error) {
+        console.error('Error canceling matchmaking:', error);
+    }
+
+    resetMatchmakingUI();
+}
+
+function resetMatchmakingUI() {
+    document.getElementById('findMatchButton').classList.remove('hidden');
+    document.getElementById('matchingStatus').classList.add('hidden');
+    document.getElementById('matchingIcon').textContent = '🔍';
+    document.getElementById('matchingTitle').textContent = 'Find a Conversation Partner';
+    document.getElementById('matchingMessage').textContent = 'Match with another user at your level for real conversation practice!';
 }

@@ -1,5 +1,6 @@
 {
   "buildCommand": "bash vercel-build.sh",
+  "outputDirectory": ".",
   "functions": {
     "api/**/*.js": {
       "memory": 1024,

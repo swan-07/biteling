@@ -1,5 +1,6 @@
 // BiteLing - Simple Homepage Script
 import userDataManager from './user-data.js';
+import notificationManager from './notifications.js';
 
 let userData = {
     streak: 0,
@@ -211,6 +212,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     setInitialIcon();
 
     await loadUserData();
+
+    // Initialize notification system for daily Bites reminders
+    await notificationManager.init();
 
     const startCard = document.querySelector('.start-card');
     startCard.addEventListener('click', () => {

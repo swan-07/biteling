@@ -1,5 +1,6 @@
 // Account Page Script
 import userDataManager from './user-data.js';
+import notificationManager from './notifications.js';
 
 // Generate consistent food emoji (same as in script.js)
 function getFoodEmojiForUser(email) {
@@ -92,7 +93,7 @@ function loadReminderTime() {
 }
 
 // Save reminder time
-function saveReminderTime() {
+async function saveReminderTime() {
     const reminderTime = {
         hour: document.getElementById('reminderHour').value,
         minute: document.getElementById('reminderMinute').value,
@@ -101,6 +102,12 @@ function saveReminderTime() {
 
     localStorage.setItem('reminderTime', JSON.stringify(reminderTime));
     console.log('Reminder time saved:', reminderTime);
+
+    // Request notification permission if not already granted
+    await notificationManager.requestPermission();
+
+    // Restart daily check with new time
+    notificationManager.startDailyCheck();
 }
 
 // Load friends list
@@ -216,6 +223,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadAccountData();
     await loadFriends();
 
+    // Initialize notification system
+    await notificationManager.init();
+
     // Sign out button
     document.getElementById('signOutBtn').addEventListener('click', async () => {
         await userDataManager.signOut();
@@ -226,6 +236,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('reminderHour').addEventListener('change', saveReminderTime);
     document.getElementById('reminderMinute').addEventListener('change', saveReminderTime);
     document.getElementById('reminderPeriod').addEventListener('change', saveReminderTime);
+
+    // Test notification button
+    const testNotificationBtn = document.getElementById('testNotificationBtn');
+    console.log('Test notification button found:', testNotificationBtn);
+
+    if (testNotificationBtn) {
+        testNotificationBtn.addEventListener('click', async () => {
+            console.log('Button clicked!');
+            try {
+                await notificationManager.testNotification();
+            } catch (error) {
+                console.error('Error in test notification:', error);
+                alert('Error: ' + error.message);
+            }
+        });
+    } else {
+        console.error('Test notification button not found!');
+    }
 
     // Add friend modal
     const addFriendBtn = document.getElementById('addFriendBtn');

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Notification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 50px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        button {
+            background: #FFD700;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #FFC700;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Notifications</h1>
+    <button id="testBtn">Test Notification 🍪</button>
+    <div id="status"></div>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+
+        function log(message) {
+            console.log(message);
+            statusDiv.innerHTML += message + '<br>';
+        }
+
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            log('Button clicked!');
+            log('Notification support: ' + ('Notification' in window));
+            log('Current permission: ' + Notification.permission);
+
+            if (!('Notification' in window)) {
+                log('❌ Browser does not support notifications');
+                return;
+            }
+
+            if (Notification.permission === 'default') {
+                log('Requesting permission...');
+                const permission = await Notification.requestPermission();
+                log('Permission result: ' + permission);
+
+                if (permission !== 'granted') {
+                    log('❌ Permission denied');
+                    return;
+                }
+            } else if (Notification.permission === 'denied') {
+                log('❌ Notifications are blocked');
+                return;
+            }
+
+            try {
+                log('Creating notification...');
+                const notification = new Notification('Time for your daily Bites! 🍪', {
+                    body: 'Keep your streak going! Practice some Chinese now.',
+                    icon: '/assets/favicon.svg',
+                    tag: 'test'
+                });
+
+                notification.onclick = () => {
+                    log('Notification clicked!');
+                    notification.close();
+                };
+
+                log('✅ Notification sent successfully!');
+            } catch (error) {
+                log('❌ Error: ' + error.message);
+            }
+        });
+
+        log('Page loaded. Notification permission: ' + Notification.permission);
+    </script>
+</body>
+</html>

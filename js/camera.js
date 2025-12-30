@@ -382,7 +382,7 @@ async function performOCR(imageSource) {
 
         if (detectedWords.length > 0) {
             // Group words into phrases and display translations overlaid on original positions
-            displayOverlayTranslations(detectedWords, imageSource);
+            await displayOverlayTranslations(detectedWords, imageSource);
         } else {
             alert('No Chinese text detected. Try:\n- Better lighting\n- Clearer focus\n- Larger text\n- Higher contrast');
         }
@@ -412,7 +412,7 @@ async function performOCR(imageSource) {
 // TRANSLATION & DISPLAY
 // ========================================
 
-function displayOverlayTranslations(detectedWords, sourceCanvas) {
+async function displayOverlayTranslations(detectedWords, sourceCanvas) {
     // Get overlay canvas
     const canvas = document.getElementById('overlay');
     const ctx = canvas.getContext('2d');
@@ -430,13 +430,15 @@ function displayOverlayTranslations(detectedWords, sourceCanvas) {
 
     console.log(`Grouped ${detectedWords.length} words into ${phrases.length} phrases`);
 
+    // Get all translations first (parallel API calls for speed)
+    const translationPromises = phrases.map(phrase => getTranslation(phrase.text));
+    const translations = await Promise.all(translationPromises);
+
     // Draw translation for each phrase at its original position
-    phrases.forEach(phrase => {
+    phrases.forEach((phrase, index) => {
         const chineseText = phrase.text;
         const bbox = phrase.bbox;
-
-        // Get translation
-        const translation = getTranslation(chineseText);
+        const translation = translations[index];
 
         // Calculate position (place translation below original text)
         const x = bbox.x0;
@@ -444,28 +446,28 @@ function displayOverlayTranslations(detectedWords, sourceCanvas) {
         const width = bbox.x1 - bbox.x0;
         const height = 60; // Height for translation box
 
-        // Draw semi-transparent background
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        // Draw semi-transparent background (iPhone-style)
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
         ctx.fillRect(x, y, width, height);
 
-        // Draw border
-        ctx.strokeStyle = '#FFD700';
+        // Draw border with yellow accent (iPhone Live Text style)
+        ctx.strokeStyle = '#FFD60A';
         ctx.lineWidth = 2;
         ctx.strokeRect(x, y, width, height);
 
         // Draw English translation
-        ctx.font = 'bold 16px Arial';
+        ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial';
         ctx.fillStyle = '#FFFFFF';
         ctx.textAlign = 'left';
 
         // Wrap text to fit within box width
-        const padding = 5;
-        wrapTextInBox(ctx, translation.english, x + padding, y + 20, width - padding * 2, 18);
+        const padding = 8;
+        wrapTextInBox(ctx, translation.english, x + padding, y + 22, width - padding * 2, 17);
 
-        // Optionally show pinyin in smaller text
-        ctx.font = '12px Arial';
-        ctx.fillStyle = '#FFD700';
-        ctx.fillText(translation.pinyin, x + padding, y + height - 5);
+        // Show pinyin in smaller text with yellow accent
+        ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial';
+        ctx.fillStyle = '#FFD60A';
+        ctx.fillText(translation.pinyin, x + padding, y + height - 8);
     });
 
     // Also display all phrases in results panel
@@ -477,10 +479,10 @@ function displayOverlayTranslations(detectedWords, sourceCanvas) {
         emptyState.remove();
     }
 
-    // Display each phrase
-    phrases.forEach(phrase => {
+    // Display each phrase with its translation
+    phrases.forEach((phrase, index) => {
         const chineseText = phrase.text;
-        const translation = getTranslation(chineseText);
+        const translation = translations[index];
 
         // Create translation item
         const item = document.createElement('div');
@@ -707,7 +709,57 @@ function splitIntoClickableWords(text) {
     return html;
 }
 
-function getTranslation(text) {
+async function getTranslation(text) {
+    try {
+        // Use MyMemory Translation API for phrase-level translation
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=zh|en`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.responseStatus === 200 && data.responseData.translatedText) {
+            const translation = data.responseData.translatedText;
+
+            // Get pinyin from CC-CEDICT for the phrase
+            const pinyin = getPinyin(text);
+
+            return {
+                pinyin: pinyin,
+                english: translation
+            };
+        }
+    } catch (error) {
+        console.error('Translation API error:', error);
+    }
+
+    // Fallback: Try CC-CEDICT or character-by-character
+    return getFallbackTranslation(text);
+}
+
+function getPinyin(text) {
+    // Try to get pinyin from CC-CEDICT
+    if (isDictionaryLoaded && ccdictDictionary[text]) {
+        return ccdictDictionary[text].pinyin;
+    }
+
+    // Build pinyin from individual characters
+    const characters = text.split('');
+    const pinyinParts = [];
+
+    for (const char of characters) {
+        if (isDictionaryLoaded && ccdictDictionary[char]) {
+            pinyinParts.push(ccdictDictionary[char].pinyin);
+        } else if (chineseDictionary[char]) {
+            pinyinParts.push(chineseDictionary[char].pinyin);
+        } else {
+            pinyinParts.push(char);
+        }
+    }
+
+    return pinyinParts.join(' ');
+}
+
+function getFallbackTranslation(text) {
     // Try CC-CEDICT first (if loaded)
     if (isDictionaryLoaded && ccdictDictionary[text]) {
         return ccdictDictionary[text];
@@ -747,11 +799,11 @@ function getTranslation(text) {
     };
 }
 
-function showWordDetails(word) {
+async function showWordDetails(word) {
     const modal = document.getElementById('wordModal');
     const wordDetails = document.getElementById('wordDetails');
 
-    const translation = getTranslation(word);
+    const translation = await getTranslation(word);
 
     wordDetails.innerHTML = `
         <div class="word-character">${word}</div>
@@ -766,7 +818,7 @@ function showWordDetails(word) {
 }
 
 window.addWordToDeck = async function(word) {
-    const translation = getTranslation(word);
+    const translation = await getTranslation(word);
 
     // Get existing cards
     const saved = localStorage.getItem('bitelingData');

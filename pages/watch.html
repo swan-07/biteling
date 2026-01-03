@@ -8,6 +8,14 @@
     <link rel="stylesheet" href="../css/watch.css">
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Loading videos...</p>
+        </div>
+    </div>
+
     <!-- Video Feed Container -->
     <div class="feed-container" id="feedContainer">
         <!-- Video will be inserted here -->
@@ -20,13 +28,6 @@
         <div class="cookies-display">🍪 <span id="cookiesCount">0</span></div>
     </div>
 
-
-    <!-- Subtitles Display -->
-    <div class="subtitles-container" id="subtitlesContainer">
-        <div class="subtitle chinese-subtitle hidden" id="chineseSubtitle"></div>
-        <div class="subtitle pinyin-subtitle hidden" id="pinyinSubtitle"></div>
-        <div class="subtitle english-subtitle hidden" id="englishSubtitle"></div>
-    </div>
 
     <!-- Side Actions -->
     <div class="side-actions">

@@ -66,7 +66,6 @@ import firebaseService from './firebase-service.js';
 let db = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await loadConfig();
     loadUserHSKLevel();
     setupEventListeners();
     setupSpeechRecognition();

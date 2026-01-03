@@ -103,7 +103,6 @@ BiteLingSite/
 
 ### 5. **Video Learning** (`watch.html`, `watch.js`)
 - YouTube integration
-- Subtitle support
 - Interactive learning
 
 ### 6. **Daily Notifications** (`notifications.js`)

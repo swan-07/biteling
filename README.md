@@ -278,7 +278,6 @@ BiteLingSite/
 - HSK-adaptive content (automatically matches your level)
 - **i+1 learning**: Each video introduces slightly new content
 - Interactive features:
-  - Chinese/Pinyin/English subtitles (toggleable)
   - Tap words to add to SRS deck
   - Playback speed control (0.5x - 1.5x)
   - Replay videos

@@ -10,7 +10,6 @@ let currentVideoIndex = 0;
 let currentVideo = null;
 let userHSKLevel = 1;
 let playbackSpeed = 1.0;
-let activeSubtitles = [];
 
 // ========================================
 // YOUTUBE VIDEO DATABASE (DYNAMIC FETCH)
@@ -303,7 +302,6 @@ async function loadVideo(index) {
     }
 
     renderVideo();
-    startSubtitleLoop();
 }
 
 function renderVideo() {
@@ -353,6 +351,12 @@ function renderVideo() {
 function onPlayerReady(event) {
     event.target.setPlaybackRate(playbackSpeed);
     event.target.playVideo();
+
+    // Hide loading screen once first video is ready
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+        loadingScreen.classList.add('hidden');
+    }
 }
 
 function onPlayerStateChange(event) {
@@ -385,70 +389,6 @@ function showNoVideosPlaceholder() {
     `;
 }
 
-// ========================================
-// SUBTITLE SYSTEM
-// ========================================
-
-let subtitleLoopInterval = null;
-let currentSubtitleTime = 0;
-
-function startSubtitleLoop() {
-    // Clear any existing loop
-    if (subtitleLoopInterval) {
-        clearInterval(subtitleLoopInterval);
-    }
-
-    currentSubtitleTime = 0;
-
-    // Simulate subtitle timing (in real app, would sync with video)
-    subtitleLoopInterval = setInterval(() => {
-        updateSubtitles(currentSubtitleTime);
-        currentSubtitleTime += 1;
-
-        // Loop subtitles
-        if (currentSubtitleTime > currentVideo.duration) {
-            currentSubtitleTime = 0;
-        }
-    }, 1000);
-}
-
-function updateSubtitles(time) {
-    const subtitle = currentVideo.subtitles.find(sub =>
-        sub.time <= time && (!currentVideo.subtitles.find(s => s.time > sub.time && s.time <= time))
-    );
-
-    if (subtitle) {
-        document.getElementById('chineseSubtitle').textContent = subtitle.chinese;
-        document.getElementById('pinyinSubtitle').textContent = subtitle.pinyin;
-        document.getElementById('englishSubtitle').textContent = subtitle.english;
-    }
-}
-
-window.toggleSubtitles = function(type) {
-    const buttons = {
-        'chinese': document.getElementById('chineseBtn'),
-        'pinyin': document.getElementById('pinyinBtn'),
-        'english': document.getElementById('englishBtn')
-    };
-
-    const subtitles = {
-        'chinese': document.getElementById('chineseSubtitle'),
-        'pinyin': document.getElementById('pinyinSubtitle'),
-        'english': document.getElementById('englishSubtitle')
-    };
-
-    // Toggle button state
-    buttons[type].classList.toggle('active');
-
-    // Toggle subtitle visibility
-    if (subtitles[type].classList.contains('hidden')) {
-        subtitles[type].classList.remove('hidden');
-        activeSubtitles.push(type);
-    } else {
-        subtitles[type].classList.add('hidden');
-        activeSubtitles = activeSubtitles.filter(t => t !== type);
-    }
-};
 
 // ========================================
 // EVENT LISTENERS
@@ -461,7 +401,6 @@ function setupEventListeners() {
             player.seekTo(0);
             player.playVideo();
         }
-        currentSubtitleTime = 0;
         console.log('Replaying video...');
     });
 
@@ -507,10 +446,10 @@ function setupEventListeners() {
 
         accumulatedDelta += e.deltaY;
 
-        // Scroll DOWN (positive deltaY) = next video (like TikTok)
-        // Threshold: 50 for accumulated scroll
-        if (accumulatedDelta > 50) {
-            console.log('Scroll DOWN threshold reached! Going to next video');
+        // Scroll either direction = next video
+        // Threshold: 50 for accumulated scroll in either direction
+        if (Math.abs(accumulatedDelta) > 50) {
+            console.log('Scroll threshold reached! Going to next video');
             isChangingVideo = true;
             accumulatedDelta = 0;
             nextVideo();
@@ -519,11 +458,6 @@ function setupEventListeners() {
             setTimeout(() => {
                 isChangingVideo = false;
             }, 800);
-        }
-        // Scroll up could go to previous video in the future
-        else if (accumulatedDelta < -50) {
-            console.log('Scroll UP detected');
-            accumulatedDelta = 0;
         }
 
         lastScrollTime = now;
@@ -613,9 +547,4 @@ function showCookieWarning() {
 
 function updateCookiesDisplay() {
     document.getElementById('cookiesCount').textContent = userData.cookies || 0;
-}
-
-function toggleSubtitlePanel() {
-    const panel = document.getElementById('subtitlePanel');
-    panel.classList.toggle('hidden');
 }

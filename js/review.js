@@ -172,6 +172,25 @@ function buildReviewDeck() {
     return dueCards.slice(0, 20);
 }
 
+// Build dictionary from review + custom deck
+function buildWordDictionary() {
+    const customWords = JSON.parse(localStorage.getItem('customDeck') || '[]');
+    const combinedDeck = [...hsk1Deck, ...customWords];
+
+    const dictionary = {};
+    combinedDeck.forEach(card => {
+        if (!dictionary[card.chinese]) {
+            dictionary[card.chinese] = {
+                pinyin: card.pinyin || '',
+                definition: card.definition || '',
+                example: card.example || ''
+            };
+        }
+    });
+
+    return dictionary;
+}
+
 // State
 let currentCardIndex = 0;
 let cardsReviewed = 0;
@@ -183,6 +202,9 @@ const dailyGoal = 20;
 let reviewDeck = buildReviewDeck();
 let cardStates = loadCardStates();
 let sessionQueue = []; // Queue for cards that need to be seen again in this session
+let wordDictionary = {};
+let maxDictWordLength = 1;
+let addedWords = new Set();
 
 // Azure TTS Configuration (loaded from config.js)
 const AZURE_CONFIG = {
@@ -192,6 +214,11 @@ const AZURE_CONFIG = {
 
 // Initialize
 function init() {
+    wordDictionary = buildWordDictionary();
+    maxDictWordLength = Math.max(1, ...Object.keys(wordDictionary).map(word => word.length));
+    loadAddedWords();
+    setupExampleWordClicks();
+
     if (reviewDeck.length === 0) {
         alert('No cards due for review! Come back later or add more words from books.');
         window.location.href = '../index.html';
@@ -248,7 +275,7 @@ function displayCard(card) {
         document.getElementById('answer').textContent = card.chinese + ' (' + card.pinyin + ')';
     }
 
-    document.getElementById('example').textContent = card.example;
+    renderExampleSentence(card.example);
 
     // Update mastery indicator
     updateMasteryIndicator(state.masteryLevel);
@@ -261,6 +288,129 @@ function displayCard(card) {
     document.querySelector('.card-back').classList.add('hidden');
     document.getElementById('showAnswerBtn').classList.remove('hidden');
     document.getElementById('ratingButtons').classList.add('hidden');
+}
+
+// Render example sentence with clickable words
+function renderExampleSentence(text) {
+    const exampleEl = document.getElementById('example');
+    exampleEl.innerHTML = makeWordsClickable(text);
+}
+
+function setupExampleWordClicks() {
+    const exampleEl = document.getElementById('example');
+    exampleEl.addEventListener('click', (event) => {
+        const wordEl = event.target.closest('.word');
+        if (!wordEl) return;
+        showDictionary(wordEl.dataset.word);
+    });
+
+    document.getElementById('dictOverlay').addEventListener('click', closeDictionary);
+    document.getElementById('dictCloseBtn').addEventListener('click', closeDictionary);
+    document.getElementById('addToDeckBtn').addEventListener('click', addWordToDeck);
+}
+
+function makeWordsClickable(text) {
+    let result = '';
+    let i = 0;
+
+    while (i < text.length) {
+        const char = text[i];
+
+        if (!isCjkChar(char)) {
+            result += escapeHtml(char);
+            i += 1;
+            continue;
+        }
+
+        let matched = false;
+        const maxLen = Math.min(maxDictWordLength, text.length - i);
+
+        for (let len = maxLen; len >= 1; len--) {
+            const word = text.substr(i, len);
+            if (wordDictionary[word]) {
+                result += `<span class="word" data-word="${escapeAttribute(word)}">${escapeHtml(word)}</span>`;
+                i += len;
+                matched = true;
+                break;
+            }
+        }
+
+        if (!matched) {
+            result += `<span class="word unknown" data-word="${escapeAttribute(char)}">${escapeHtml(char)}</span>`;
+            i += 1;
+        }
+    }
+
+    return result;
+}
+
+function showDictionary(word) {
+    const entry = wordDictionary[word];
+
+    document.getElementById('dictChinese').textContent = word;
+    document.getElementById('dictPinyin').textContent = entry?.pinyin || 'Pinyin not available';
+    document.getElementById('dictDefinition').textContent = entry?.definition || 'Definition not available';
+    document.getElementById('dictExample').textContent = entry?.example || '';
+
+    const addBtn = document.getElementById('addToDeckBtn');
+    addBtn.dataset.word = word;
+
+    if (!entry) {
+        addBtn.classList.remove('added');
+        addBtn.textContent = 'No entry available';
+        addBtn.disabled = true;
+    } else if (addedWords.has(word)) {
+        addBtn.classList.add('added');
+        addBtn.innerHTML = '<span>✓</span>Added to Deck';
+        addBtn.disabled = true;
+    } else {
+        addBtn.classList.remove('added');
+        addBtn.innerHTML = '<span>+</span>Add to Review Deck';
+        addBtn.disabled = false;
+    }
+
+    document.getElementById('dictionaryPopup').classList.add('show');
+    document.getElementById('dictOverlay').classList.add('show');
+}
+
+function closeDictionary() {
+    document.getElementById('dictionaryPopup').classList.remove('show');
+    document.getElementById('dictOverlay').classList.remove('show');
+}
+
+function addWordToDeck() {
+    const addBtn = document.getElementById('addToDeckBtn');
+    const word = addBtn.dataset.word;
+    const entry = wordDictionary[word];
+
+    if (!word || !entry || addedWords.has(word)) return;
+
+    let customDeck = JSON.parse(localStorage.getItem('customDeck') || '[]');
+    customDeck.push({
+        chinese: word,
+        pinyin: entry.pinyin,
+        definition: entry.definition,
+        example: entry.example
+    });
+    localStorage.setItem('customDeck', JSON.stringify(customDeck));
+
+    addedWords.add(word);
+    saveAddedWords();
+
+    addBtn.classList.add('added');
+    addBtn.innerHTML = '<span>✓</span>Added to Deck';
+    addBtn.disabled = true;
+}
+
+function loadAddedWords() {
+    const saved = localStorage.getItem('addedWords');
+    if (saved) {
+        addedWords = new Set(JSON.parse(saved));
+    }
+}
+
+function saveAddedWords() {
+    localStorage.setItem('addedWords', JSON.stringify([...addedWords]));
 }
 
 // Update button times dynamically
@@ -478,6 +628,20 @@ function playAudioFallback(text) {
         utterance.rate = 0.8;
         speechSynthesis.speak(utterance);
     }
+}
+
+function isCjkChar(char) {
+    return /[\u4E00-\u9FFF]/.test(char);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function escapeAttribute(text) {
+    return escapeHtml(text).replace(/"/g, '&quot;');
 }
 
 // Keyboard shortcuts

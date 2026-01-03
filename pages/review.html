@@ -57,6 +57,24 @@
                 </button>
             </div>
         </div>
+
+        <!-- Dictionary Popup -->
+        <div class="dictionary-popup" id="dictionaryPopup">
+            <div class="dict-header">
+                <div class="dict-chinese" id="dictChinese">你好</div>
+                <button class="dict-close" id="dictCloseBtn">×</button>
+            </div>
+            <div class="dict-pinyin" id="dictPinyin">nǐ hǎo</div>
+            <div class="dict-definition" id="dictDefinition">hello</div>
+            <div class="dict-example" id="dictExample">你好！很高兴见到你。</div>
+            <button class="add-to-deck-btn" id="addToDeckBtn">
+                <span>+</span>
+                Add to Review Deck
+            </button>
+        </div>
+
+        <!-- Overlay for dictionary -->
+        <div class="dict-overlay" id="dictOverlay"></div>
     </div>
 
     <script src="../env-config.js" onerror="this.remove()"></script>

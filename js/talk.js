@@ -500,10 +500,23 @@ async function addAIMessage(response) {
 
     // Auto-play audio if enabled or in call mode
     if (autoPlayEnabled || currentMode === 'call') {
+        // Stop speech recognition while AI is speaking to prevent echo
+        const wasRecording = isRecording;
+        if (currentMode === 'call' && wasRecording) {
+            stopRecording();
+        }
+
         try {
             await speakText(response.chinese);
         } catch (error) {
             console.error('Auto-play failed:', error);
+        }
+
+        // Restart speech recognition after AI finishes speaking
+        if (currentMode === 'call' && callActive && wasRecording) {
+            setTimeout(() => {
+                if (callActive) startRecording();
+            }, 500);
         }
     }
 }

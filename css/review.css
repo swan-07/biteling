@@ -98,6 +98,40 @@ body {
         0 2px 4px rgba(139, 115, 85, 0.06);
 }
 
+/* Card Type Selector */
+.card-type-selector {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.card-type-btn {
+    background: #FFFFFF;
+    border: 2px solid #E8E0D5;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-size: 0.95rem;
+    color: #6B5D4F;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Quicksand', sans-serif;
+    transition: all 0.2s ease;
+    min-width: 90px;
+}
+
+.card-type-btn:hover {
+    background: #FFF9F0;
+    border-color: #FFD93D;
+}
+
+.card-type-btn.active {
+    background: linear-gradient(135deg, #FFD700 0%, #FFC700 100%);
+    border-color: #FFD700;
+    color: #6B5D4F;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
 /* Flashcard */
 .flashcard-container {
     flex: 1;

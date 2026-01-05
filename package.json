@@ -1,0 +1,17 @@
+{
+  "name": "biteling",
+  "version": "1.0.0",
+  "description": "Chinese learning app with SRS flashcards, graded readers, and YouTube videos",
+  "private": true,
+  "scripts": {
+    "dev": "python3 -m http.server 8000",
+    "build": "bash vercel-build.sh"
+  },
+  "dependencies": {
+    "youtube-transcript": "^1.2.1"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.x"
+  }
+}

@@ -198,6 +198,8 @@ let cookiesEarned = 0;
 let showingAnswer = false;
 let masteredInSession = 0;
 const dailyGoal = 20;
+let cardType = 'chinese-english'; // 'chinese-english', 'english-chinese', or 'both'
+let currentCardDirection = 'chinese-english'; // Direction of the current card being shown
 
 let reviewDeck = buildReviewDeck();
 let cardStates = loadCardStates();
@@ -218,6 +220,7 @@ function init() {
     maxDictWordLength = Math.max(1, ...Object.keys(wordDictionary).map(word => word.length));
     loadAddedWords();
     setupExampleWordClicks();
+    setupCardTypeSelector();
 
     if (reviewDeck.length === 0) {
         alert('No cards due for review! Come back later or add more words from books.');
@@ -243,6 +246,7 @@ function loadCard(index) {
     // Check if we have cards in the session queue first
     if (sessionQueue.length > 0) {
         currentCard = sessionQueue.shift(); // Get first card from queue
+        determineCardDirection(); // Determine direction for this card
         displayCard(currentCard);
         return;
     }
@@ -253,6 +257,7 @@ function loadCard(index) {
     }
 
     currentCard = reviewDeck[index];
+    determineCardDirection(); // Determine direction for this card
     displayCard(currentCard);
 }
 
@@ -260,10 +265,8 @@ function loadCard(index) {
 function displayCard(card) {
     const state = getCardState(card.chinese, cardStates);
 
-    // Randomly decide card direction (50/50)
-    const showChinese = Math.random() < 0.5;
-
-    if (showChinese) {
+    // Use the determined card direction
+    if (currentCardDirection === 'chinese-english') {
         // Chinese → English
         document.getElementById('question').textContent = card.chinese;
         document.getElementById('hint').textContent = card.pinyin;
@@ -660,6 +663,35 @@ function handleKeyPress(e) {
                 rateCard('good');
                 break;
         }
+    }
+}
+
+// Card Type Selector
+function setupCardTypeSelector() {
+    const buttons = document.querySelectorAll('.card-type-btn');
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Update active state
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Update card type
+            cardType = btn.dataset.type;
+
+            // Reload current card with new direction
+            determineCardDirection();
+            loadCard(currentCardIndex);
+        });
+    });
+}
+
+function determineCardDirection() {
+    if (cardType === 'both') {
+        // Randomly choose direction for each card
+        currentCardDirection = Math.random() < 0.5 ? 'chinese-english' : 'english-chinese';
+    } else {
+        currentCardDirection = cardType;
     }
 }
 

@@ -34,6 +34,31 @@
         <button class="action-btn replay-btn" id="replayBtn" title="Replay video">
             <span class="action-icon">🔄</span>
         </button>
+        <button class="action-btn transcript-btn" id="transcriptBtn" title="Show transcript">
+            <span class="action-icon">📝</span>
+        </button>
+    </div>
+
+    <!-- Transcript Panel -->
+    <div class="transcript-panel hidden" id="transcriptPanel">
+        <div class="transcript-header">
+            <h3>Transcript</h3>
+            <button class="transcript-close-btn" id="transcriptCloseBtn">✕</button>
+        </div>
+        <div class="transcript-content" id="transcriptContent">
+            <div class="transcript-loading">Loading transcript...</div>
+        </div>
+    </div>
+
+    <!-- Dictionary Popup (for transcript word clicks) -->
+    <div class="dict-popup hidden" id="dictPopup">
+        <div class="dict-popup-content">
+            <button class="dict-close-btn" id="dictCloseBtn">✕</button>
+            <div class="dict-word" id="dictWord">字</div>
+            <div class="dict-pinyin" id="dictPinyin">zì</div>
+            <div class="dict-definition" id="dictDefinition">character; word</div>
+            <button class="add-to-srs-btn" id="addToSRSBtn">Add to SRS</button>
+        </div>
     </div>
 
     <!-- Scroll Indicator -->
@@ -61,6 +86,8 @@
     <!-- Firebase & User Data -->
     <script src="../config/firebase-config.js"></script>
     <script src="../config/firebase-config.local.js" onerror="this.remove()"></script>
+    <!-- Word Dictionary -->
+    <script src="../js/dictionary.js"></script>
     <script type="module" src="../js/watch.js"></script>
 </body>
 </html>

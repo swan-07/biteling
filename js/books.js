@@ -82,6 +82,46 @@ const bookCatalog = [
         price: 100,
         description: 'Journey through major dynasties and historical events.',
         chapters: 12
+    },
+    {
+        id: 'book9',
+        title: '红楼梦精选',
+        titleEn: 'Dream of the Red Chamber - Selected Passages',
+        level: 'HSK 5',
+        icon: '🏮',
+        price: 150,
+        description: 'Explore the masterpiece of Chinese literature with adapted excerpts.',
+        chapters: 15
+    },
+    {
+        id: 'book10',
+        title: '现代中国社会',
+        titleEn: 'Modern Chinese Society',
+        level: 'HSK 5',
+        icon: '🏙️',
+        price: 150,
+        description: 'Examine contemporary issues and cultural changes in China.',
+        chapters: 14
+    },
+    {
+        id: 'book11',
+        title: '中国哲学思想',
+        titleEn: 'Chinese Philosophical Thought',
+        level: 'HSK 5',
+        icon: '☯️',
+        price: 150,
+        description: 'Discover the wisdom of Confucius, Laozi, and other great thinkers.',
+        chapters: 13
+    },
+    {
+        id: 'book12',
+        title: '当代中国科技',
+        titleEn: 'Contemporary Chinese Technology',
+        level: 'HSK 5',
+        icon: '🚀',
+        price: 150,
+        description: 'Learn about China\'s innovations in technology and science.',
+        chapters: 12
     }
 ];
 

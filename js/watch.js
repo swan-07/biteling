@@ -217,6 +217,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     initializeVideo();
     setupEventListeners();
+    setupTranscriptListeners();
     updateCookiesDisplay();
 });
 
@@ -547,4 +548,198 @@ function showCookieWarning() {
 
 function updateCookiesDisplay() {
     document.getElementById('cookiesCount').textContent = userData.cookies || 0;
+}
+
+// ========================================
+// TRANSCRIPT FUNCTIONALITY
+// ========================================
+
+let currentTranscript = null;
+
+function setupTranscriptListeners() {
+    const transcriptBtn = document.getElementById('transcriptBtn');
+    const transcriptPanel = document.getElementById('transcriptPanel');
+    const transcriptCloseBtn = document.getElementById('transcriptCloseBtn');
+    const dictCloseBtn = document.getElementById('dictCloseBtn');
+    const addToSRSBtn = document.getElementById('addToSRSBtn');
+
+    transcriptBtn.addEventListener('click', toggleTranscript);
+    transcriptCloseBtn.addEventListener('click', closeTranscript);
+    dictCloseBtn.addEventListener('click', closeDictionary);
+    addToSRSBtn.addEventListener('click', addWordToSRS);
+}
+
+function toggleTranscript() {
+    const panel = document.getElementById('transcriptPanel');
+    if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        if (!currentTranscript) {
+            fetchTranscript();
+        }
+    } else {
+        panel.classList.add('hidden');
+    }
+}
+
+function closeTranscript() {
+    document.getElementById('transcriptPanel').classList.add('hidden');
+}
+
+async function fetchTranscript() {
+    const contentEl = document.getElementById('transcriptContent');
+
+    if (!currentVideo || !currentVideo.youtubeId) {
+        contentEl.innerHTML = '<div class="transcript-loading">No video loaded</div>';
+        return;
+    }
+
+    contentEl.innerHTML = '<div class="transcript-loading">Loading transcript...</div>';
+
+    try {
+        // Fetch transcript from our API endpoint
+        const response = await fetch(`/api/captions?videoId=${currentVideo.youtubeId}`);
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch transcript');
+        }
+
+        const data = await response.json();
+
+        if (!data.transcript) {
+            throw new Error('No transcript in response');
+        }
+
+        // Store transcript
+        currentTranscript = data.transcript;
+
+        // Display with clickable words
+        contentEl.innerHTML = `<div class="transcript-text">${makeWordsClickable(data.transcript)}</div>`;
+        setupTranscriptWordClicks();
+
+    } catch (error) {
+        console.error('Error fetching transcript:', error);
+        // Fall back to placeholder if API fails
+        const placeholderText = '这是一个示例字幕。点击任何汉字来查看定义和拼音。你可以把单词添加到你的学习卡片中。';
+        contentEl.innerHTML = `<div class="transcript-text">${makeWordsClickable(placeholderText)}</div>`;
+        setupTranscriptWordClicks();
+    }
+}
+
+function makeWordsClickable(text) {
+    if (!window.wordDictionary) {
+        return text; // Dictionary not loaded yet
+    }
+
+    let result = '';
+    let i = 0;
+
+    while (i < text.length) {
+        const char = text[i];
+
+        // Skip non-CJK characters
+        if (!isCjkChar(char)) {
+            result += char;
+            i += 1;
+            continue;
+        }
+
+        let matched = false;
+        const maxLen = Math.min(4, text.length - i); // Check up to 4 characters
+
+        // Try to match longest word first
+        for (let len = maxLen; len >= 1; len--) {
+            const word = text.substr(i, len);
+            if (window.wordDictionary[word]) {
+                result += `<span class="transcript-word" data-word="${word}">${word}</span>`;
+                i += len;
+                matched = true;
+                break;
+            }
+        }
+
+        if (!matched) {
+            result += `<span class="transcript-word" data-word="${char}">${char}</span>`;
+            i += 1;
+        }
+    }
+
+    return result;
+}
+
+function isCjkChar(char) {
+    const code = char.charCodeAt(0);
+    return (code >= 0x4E00 && code <= 0x9FFF) || // CJK Unified Ideographs
+           (code >= 0x3400 && code <= 0x4DBF) || // CJK Extension A
+           (code >= 0x20000 && code <= 0x2A6DF); // CJK Extension B
+}
+
+function setupTranscriptWordClicks() {
+    const transcriptContent = document.getElementById('transcriptContent');
+    transcriptContent.addEventListener('click', (event) => {
+        const wordEl = event.target.closest('.transcript-word');
+        if (!wordEl) return;
+        showWordDictionary(wordEl.dataset.word);
+    });
+}
+
+function showWordDictionary(word) {
+    const entry = window.wordDictionary?.[word];
+
+    document.getElementById('dictWord').textContent = word;
+    document.getElementById('dictPinyin').textContent = entry?.pinyin || 'Pinyin not available';
+    document.getElementById('dictDefinition').textContent = entry?.definition || 'Definition not available';
+
+    const addBtn = document.getElementById('addToSRSBtn');
+    addBtn.dataset.word = word;
+    addBtn.dataset.pinyin = entry?.pinyin || '';
+    addBtn.dataset.definition = entry?.definition || '';
+
+    document.getElementById('dictPopup').classList.remove('hidden');
+}
+
+function closeDictionary() {
+    document.getElementById('dictPopup').classList.add('hidden');
+}
+
+async function addWordToSRS() {
+    const btn = document.getElementById('addToSRSBtn');
+    const word = btn.dataset.word;
+    const pinyin = btn.dataset.pinyin;
+    const definition = btn.dataset.definition;
+
+    if (!word) return;
+
+    // Get existing cards
+    const saved = localStorage.getItem('bitelingData');
+    const data = saved ? JSON.parse(saved) : { cards: [] };
+
+    // Check if word already exists
+    if (data.cards.some(card => card.chinese === word)) {
+        btn.textContent = 'Already in SRS ✓';
+        setTimeout(() => {
+            btn.textContent = 'Add to SRS';
+        }, 2000);
+        return;
+    }
+
+    // Add new card
+    const newCard = {
+        chinese: word,
+        pinyin: pinyin,
+        english: definition,
+        nextReview: new Date().toISOString(),
+        interval: 0,
+        easeFactor: 2.5,
+        masteryLevel: 0
+    };
+
+    data.cards.push(newCard);
+    localStorage.setItem('bitelingData', JSON.stringify(data));
+
+    // Update button feedback
+    btn.textContent = 'Added ✓';
+    setTimeout(() => {
+        btn.textContent = 'Add to SRS';
+        closeDictionary();
+    }, 1000);
 }

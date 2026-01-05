@@ -33,28 +33,16 @@ async function saveUserData() {
     await userDataManager.setHSKLevel(userData.level);
 }
 
-// Generate consistent food emoji based on email
+// Get user profile icon (custom or default)
 function getFoodEmojiForUser(email) {
-    const foodEmojis = [
-        '🍕', '🍔', '🍟', '🌭', '🍿', '🧀', '🥓', '🥚', '🍳',
-        '🥐', '🥯', '🍞', '🥖', '🥨', '🧇', '🥞', '🧈', '🍖',
-        '🍗', '🥩', '🍤', '🍣', '🍱', '🥟', '🍜', '🍲', '🍛',
-        '🍝', '🥘', '🥗', '🥙', '🌮', '🌯', '🫔', '🥪', '🍕',
-        '🍰', '🎂', '🧁', '🍮', '🍩', '🍪', '🍫', '🍬', '🍭',
-        '🍡', '🍧', '🍨', '🍦', '🥧', '🧋', '🍵', '☕', '🥤',
-        '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍒', '🍑',
-        '🥝', '🍍', '🥭', '🥥', '🍅', '🥑', '🫒', '🥕', '🌽'
-    ];
-
-    // Create a simple hash from email to get consistent emoji
-    let hash = 0;
-    for (let i = 0; i < email.length; i++) {
-        hash = ((hash << 5) - hash) + email.charCodeAt(i);
-        hash = hash & hash; // Convert to 32bit integer
+    // Check if user has a custom icon selected from the shop
+    const customIcon = localStorage.getItem('userProfileIcon');
+    if (customIcon) {
+        return customIcon;
     }
 
-    const index = Math.abs(hash) % foodEmojis.length;
-    return foodEmojis[index];
+    // Default to cookie emoji for all new users
+    return '🍪';
 }
 
 // Update user account display
@@ -255,10 +243,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     userIcon.addEventListener('click', async () => {
         if (userDataManager.isSignedIn()) {
             const user = userDataManager.getCurrentUser();
-            const foodEmoji = getFoodEmojiForUser(user.email);
+            const isPremium = localStorage.getItem('isPremium') === 'true';
+
+            // Show crown for premium users, custom/default icon for free users
+            const displayIcon = isPremium ? '👑' : getFoodEmojiForUser(user.email);
 
             // Show account modal
-            document.getElementById('accountEmoji').textContent = foodEmoji;
+            document.getElementById('accountEmoji').textContent = displayIcon;
             document.getElementById('accountEmail').textContent = user.email;
             accountModal.classList.remove('hidden');
         } else {
